@@ -34,7 +34,7 @@ export default function App() {
     [progress, setProgress] = useState<Progress>(readProgress),
     [toast, setToast] = useState(''),
     [health, setHealth] = useState(3),
-    [location, setLocation] = useState('COSMIC GATEWAY'),
+    [location, setLocation] = useState('A LITTLE ABOUT ASH'),
     [world, setWorld] = useState(0),
     [objective, setObjective] = useState(''),
     [bowEquipped, setBowEquipped] = useState(false),
@@ -63,7 +63,7 @@ export default function App() {
       progress: setProgress,
       health: setHealth,
       location: setLocation,
-      world: setWorld,
+      world: (value: number) => {setWorld(value); setToast('');},
       objective: setObjective,
       equipment: setBowEquipped,
       boss: setBoss,
@@ -84,8 +84,8 @@ export default function App() {
       type: Phaser.AUTO,
       parent: host.current!,
       backgroundColor: '#100d29',
-      pixelArt: true,
-      antialias: false,
+      pixelArt: false,
+      antialias: true,
       scale: {
         mode: Phaser.Scale.RESIZE,
         width: host.current!.clientWidth,
@@ -163,7 +163,7 @@ export default function App() {
     bridge.emit('skill-complete', showId);
     audio.play(1000);
     setOverlay(null);
-    setToast(category.title.toUpperCase() + ' UNLOCKED · A new creative possibility.');
+    setToast(category.title + ' explored. Choose another portal whenever you like.');
   };
   const close = () => setOverlay(started ? null : 'menu');
   const share = async () => {
@@ -205,13 +205,14 @@ export default function App() {
         >
           A<span>✦</span>SHIFY<span className="wordmark-dot">.</span>
         </a>
-        <span className="edition">A SMALL ADVENTURE. A WHOLE UNIVERSE.</span>
+        <span className="edition">GAME DEVELOPER · INTERACTIVE PORTFOLIO</span>
         <nav>
+          <button className="work-shortcut" onClick={() => {setStarted(true); setOverlay(null); bridge.emit('travel', 2);}}>View my work ↗</button>
           <button onClick={() => setOverlay('map')} aria-label="World map">
             ⌖
           </button>
           <button onClick={() => setOverlay('skills')}>
-            ✧ <span>Skill tree</span> {progress.skills.length}/7
+            ✧ <span>My disciplines</span> {progress.skills.length}/7
           </button>
           <button
             aria-label="Toggle sound"
@@ -234,7 +235,7 @@ export default function App() {
         {started && (
           <div className="hud">
             <div>
-              <small>{String(world + 1).padStart(2, '0')} / THE ADVENTURE</small>
+              <small>{String(world + 1).padStart(2, '0')} / 03 · EXPLORE AT YOUR PACE</small>
               <strong>{location}</strong>
               <p className="objective">{objective}</p>
               {bowEquipped && (
@@ -243,22 +244,7 @@ export default function App() {
                 </p>
               )}
             </div>
-            <div className="counters">
-              <span className="hearts">
-                {'♥'.repeat(health)}
-                <span className="empty">{'♡'.repeat(3 - health)}</span>
-              </span>
-              <span>✦ {progress.stars.length + progress.secrets.length}</span>
-            </div>
-          </div>
-        )}
-        {started && world === 5 && !overlay && (
-          <div className="boss-hud">
-            THE IMPOSSIBLE IDEA{' '}
-            <span>
-              {'◆'.repeat(boss)}
-              {'◇'.repeat(3 - boss)}
-            </span>
+
           </div>
         )}
         {overlay === 'menu' && (
@@ -276,7 +262,7 @@ export default function App() {
             </p>
             <button className="primary" disabled={!ready} onClick={start}>
               {ready
-                ? progress.unlockedWorld
+                ? progress.tasks.length || progress.skills.length
                   ? 'CONTINUE ADVENTURE'
                   : 'START ADVENTURE'
                 : 'GATHERING STARDUST…'}{' '}
@@ -314,41 +300,15 @@ export default function App() {
                   <small>YOUR POCKET FIELD GUIDE</small>
                   <h2>Follow your curiosity.</h2>
                   <p>
-                    Collect the introductory stars, explore the sports gardens, master your bow,
-                    discover the cosmos, unlock seven creative skills, and face The Impossible Idea.
+                    Meet Ash through a few optional hobbies, visit the observatory, and explore her creative work. All three areas are open from the start.
                   </p>
                   <div className="controls-list">
-                    <span>
-                      <kbd>A</kbd> <kbd>D</kbd> / ← →
-                    </span>
-                    <b>Move / Pilates balance</b>
-                    <span>
-                      <kbd>SPACE</kbd> / ↑
-                    </span>
-                    <b>Jump · hold for height</b>
-                    <span>
-                      <kbd>E</kbd>
-                    </span>
-                    <b>Interact / swing / timing</b>
-                    <span>Hold E</span>
-                    <b>Stretch toward the star</b>
-                    <span>Hold & release on world</span>
-                    <b>Aim & shoot your bow</b>
-                    <span>W / S + hold / release F</span>
-                    <b>Keyboard aiming & shooting</b>
-                    <span>Click or tap stars / planets</span>
-                    <b>Solve cosmic puzzles</b>
-                    <span>1–5 near stars / E near planets</span>
-                    <b>Keyboard puzzle controls</b>
-                    <span>
-                      <kbd>ESC</kbd>
-                    </span>
-                    <b>Pause</b>
+                    <span><kbd>A</kbd> <kbd>D</kbd> / ← →</span><b>Walk</b>
+                    <span><kbd>E</kbd> / tap a station</span><b>Try an activity or open a portal</b>
+                    <span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span><b>Connect the observatory stars</b>
+                    <span>View my work</span><b>Go straight to the portfolio</b>
                   </div>
-                  <p className="muted">
-                    Follow the prompt above Ash. Touch controls appear at the bottom. Falling
-                    returns you to a checkpoint; completed challenges stay saved.
-                  </p>
+                  <p className="muted">No obstacles, timers, or required tasks. Explore at your own pace. Touch controls are at the bottom.</p>
                   <button className="primary" onClick={started ? close : start}>
                     LET’S EXPLORE ↗
                   </button>
@@ -376,7 +336,7 @@ export default function App() {
                         setOverlay(null);
                       }}
                     >
-                      Replay this world’s challenges
+                      Replay this area
                     </button>
                   </div>
                   <label className="volume">
@@ -450,13 +410,7 @@ export default function App() {
                       <i />
                     </div>
                   )}
-                  <h2>
-                    {showTime < showcaseDuration / 3
-                      ? 'IDEAS BECOME WORLDS.'
-                      : showTime < (showcaseDuration * 5) / 6
-                        ? category.title.toUpperCase()
-                        : category.title.toUpperCase() + ' UNLOCKED!'}
-                  </h2>
+                  <h2>{category.title}</h2>
                   {project ? (
                     <>
                       <h3>{project.name}</h3>
@@ -469,13 +423,11 @@ export default function App() {
                       <p className="muted">A temporary presentation. Real projects arrive later.</p>
                     </>
                   )}
-                  <div className="timeline">
-                    <i style={{ width: `${(showTime / showcaseDuration) * 100}%` }} />
-                  </div>
+
                   <div className="button-row">
                     <button onClick={() => setShowKey((k) => k + 1)}>↻ Replay</button>
                     <button className="primary" onClick={finish}>
-                      {showTime < showcaseDuration ? 'SKIP & UNLOCK' : 'RETURN TO THE WORLD'} ↗
+                      {'BACK TO PORTFOLIO'} ↗
                     </button>
                   </div>
                 </>
@@ -485,8 +437,8 @@ export default function App() {
                   <small>YOUR CREATIVE CONSTELLATION</small>
                   <h2>
                     {progress.skills.length === 7
-                      ? 'Ash’s skill tree — completed!'
-                      : `Skills unlocked: ${progress.skills.length}/7`}
+                      ? 'All seven disciplines explored'
+                      : `Disciplines explored: ${progress.skills.length}/7`}
                   </h2>
                   <div className="skill-grid">
                     {categories.map((c) => (
@@ -494,27 +446,15 @@ export default function App() {
                         <span style={{ color: c.color }}>{c.icon}</span>
                         <b>{c.title}</b>
                         <small>
-                          {progress.skills.includes(c.id) ? 'UNLOCKED' : 'FIND THE PORTAL'}
+                          {progress.skills.includes(c.id) ? 'EXPLORED' : 'OPEN IN THE PORTFOLIO'}
                         </small>
                       </div>
-                    ))}
-                  </div>
-                  <div className="achievements">
-                    {[
-                      ['active-soul', 'Active Soul'],
-                      ['sharp-eye', 'Sharp Eye'],
-                      ['cosmic-explorer', 'Cosmic Explorer'],
-                      ['creator-of-worlds', 'Creator of Worlds'],
-                    ].map(([id, name]) => (
-                      <span className={progress.tasks.includes(id) ? 'earned' : ''} key={id}>
-                        ✦ {name}
-                      </span>
                     ))}
                   </div>
                   <p className="gold">
                     {progress.skills.length === 7
                       ? '7 SKILLS. COUNTLESS IDEAS. ONE GAME DEVELOPER.'
-                      : `${progress.secrets.length}/4 secret stars discovered`}
+                      : 'Explore any discipline, in any order.'}
                   </p>
                 </>
               )}
@@ -703,12 +643,12 @@ export default function App() {
           </div>
         )}
         <div className="bottom-note">
-          {!started ? '✦  PRESS START TO KNOW ASH' : 'A / D  MOVE     SPACE  JUMP     E  INTERACT'}
-          <span>SEVEN WORLDS · ONE CURIOUS SOUL</span>
+          {!started ? '✦  PRESS START TO KNOW ASH' : 'A / D  WALK     E  INTERACT     OR CLICK A STATION'}
+          <span>THREE AREAS · ONE CREATIVE MIND</span>
         </div>
       </section>
       <footer>
-        <span>MADE OF PIXELS & POSSIBILITY</span>
+        <span>IDEAS MADE PLAYABLE</span>
         <button onClick={() => setOverlay('map')}>Explore the universe ↗</button>
         <span>ASHIFY — ENTER MY UNIVERSE</span>
       </footer>

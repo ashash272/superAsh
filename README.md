@@ -1,6 +1,6 @@
 # ASHIFY — Enter my universe
 
-A local React + TypeScript + Phaser 3 pixel-art adventure, built directly in `E:\superAsh`.
+A local React + TypeScript + Phaser 3 interactive portfolio, built directly in `E:\superAsh`.
 
 ## Play locally
 
@@ -19,31 +19,24 @@ npm run preview
 
 No public deployment or GitHub push has been performed. Original photos and environment references in `my-assets` remain untouched and are excluded from the public build.
 
-## The connected adventure
+## Three open areas
 
-1. **Cosmic Gateway:** run, jump between floating ruins, collect three introduction stars and meet Ash.
-2. **Active World:** return three tennis balls, time a padel wall ricochet, find the yoga rhythm, hold a stretch, and balance with Pilates. All five unlock Active Soul.
-3. **Archer’s Forest:** pick up the bow, draw and release ballistic arrows, hit three stationary and three moving targets, and solve the Moon → Leaf → Star rune gate. Unlock Sharp Eye.
-4. **The Observatory:** connect five stars in sequence, align rotating planets with their gold markers, and look through the telescope. Unlock Cosmic Explorer.
-5. **Creator’s Dimension:** stomp three bugs, explore seven professional skill portals, and unlock the complete skill tree. Each temporary showreel has skip/replay controls and a distinct icon/color treatment.
-6. **The Impossible Idea:** avoid projectiles and telegraphed falling blocks; land three arrows while the core is vulnerable.
-7. **Welcome to My Universe:** the final reveal, project gallery, replay, sharing and configurable Instagram link.
+1. **A little about Ash:** tennis, padel, yoga, flexibility, Pilates and archery in one flat room. Each optional interaction takes a moment and introduces a personal interest.
+2. **The Observatory:** connect three stars, then optionally look through the telescope. Keyboard, mouse and touch are supported.
+3. **The Portfolio:** seven immediately accessible discipline portals. No enemies, timers, required completion or boss fight. The final portal introduces Ash.
 
-World gates enforce progression. The map allows revisiting unlocked worlds. Pause includes a current-world challenge replay option and a separately confirmed full reset. Four optional stars reward exploration and reveal personal details.
-
-The intended first-play pacing is exploratory; a 10–15 minute duration has not yet been measured with first-time human players.
+The header’s **View my work** button takes visitors directly to the portfolio. All three areas are available in the map from the beginning. Actual project arrays are still empty and explicitly marked as upcoming; add real media using the schema below.
 
 ## Controls
 
-- A/D or Left/Right: move; also adjust Pilates balance.
-- Space/Up: jump. Hold for height; release early for a short hop.
-- E: interact, swing, launch, or time a yoga breath.
-- Hold E: flexibility challenge.
-- Hold left click or touch on the game world, then release: draw and shoot the bow. Dotted trajectory previews gravity. Alternatively, W/S adjusts aim; hold F to draw and release F to fire. The equipped bow remains visible while idle and moving, and pickup is saved.
-- Click/tap stars and planets: Observatory puzzles.
-- Enter: start. Escape: pause.
+- A/D or Left/Right: walk along continuous, obstacle-free ground.
+- E near a station, or click/tap it: interact.
+- 1, 2, 3: connect observatory stars. E also connects the next star near the station.
+- Enter: start. Escape: pause. On-screen buttons support touch.
 
-Touchscreen controls appear at the bottom. Use the game world itself for touch aiming. Desktop browsers also show subdued touch buttons. Portrait mode in Pause uses a real 9:16 viewport without stretching the character or physics. Browser blur pauses active play.
+## Visual direction
+
+Smooth canvas gradients and curved landscape layers replace pixel environment images. Animated mist, stars and moon drift create depth. Portals use luminous ellipses, animated inner rings and orbiting light particles. Text uses larger antialiased sans-serif labels. Original reference images remain untouched.
 
 ## Approved character and art
 
@@ -63,7 +56,7 @@ World backgrounds and character art were generated for this project. Equipment, 
 - `src/data/progress.ts`: world/category configuration, project schema, social link and validated local progress.
 - `tests/game.spec.ts`: browser gameplay checks.
 
-Progress uses `ashify-v2` in localStorage; valid introductory data from the earlier v1 preview is accepted when no v2 save exists. Unavailable storage falls back to session play. Private reference folders are ignored by Git.
+Progress uses `ashify-v3` in localStorage. Older saves retain valid explored disciplines and personal discoveries, and restart in the new first area. Unavailable storage falls back to session play. Private reference folders are ignored by Git.
 
 ## Add real project media later
 

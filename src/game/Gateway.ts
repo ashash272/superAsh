@@ -50,7 +50,7 @@ export class Gateway extends Phaser.Scene {
     this.health = 3;
     this.checkpoint = 120;
     this.invulnerableUntil = 0;
-    this.bow = this.world === 5 || (this.world === 2 && this.has('arch-bow'));
+    this.bow = false;
     this.drawing = 0;
     this.drawPointer = null;
     this.keyboardDraw = false;
@@ -62,11 +62,6 @@ export class Gateway extends Phaser.Scene {
     clearTouch();
   }
   preload() {
-    this.load.image('cosmic', assetUrl('assets/environments/cosmic.png'));
-    this.load.spritesheet('worlds', assetUrl('assets/environments/worlds.png'), {
-      frameWidth: 836,
-      frameHeight: 313,
-    });
     this.load.spritesheet('ash-atlas', assetUrl('assets/character/ash-animations.png'), {
       frameWidth: 192,
       frameHeight: 256,
@@ -98,35 +93,12 @@ export class Gateway extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, width, 850);
     this.background();
     this.platforms = this.physics.add.staticGroup();
-    if (this.world === 0) {
-      [
-        [0, 650, 600],
-        [665, 610, 245],
-        [980, 560, 240],
-        [1280, 650, 520],
-        [330, 540, 144],
-        [565, 515, 100],
-        [720, 480, 144],
-        [925, 445, 90],
-        [1040, 410, 144],
-      ].forEach(([x, y, w]) => this.platform(x, y, w));
-    } else {
-      this.platform(0, 650, width);
-      if (this.world !== 5 && this.world !== 6) {
-        [
-          [380, 545, 130],
-          [780, 470, 120],
-          [1120, 535, 145],
-          [1760, 530, 135],
-          [2120, 450, 145],
-        ].forEach(([x, y, w]) => this.platform(x, y, w));
-      }
-    }
+    this.platform(0, 650, width);
     this.player = this.physics.add.sprite(120, 600, 'ash-atlas', 8).setScale(0.36).setDepth(10);
     this.player.setSize(68, 192).setOffset(64, 54).setMaxVelocity(290, 750).setDragX(1800);
     this.physics.add.collider(this.player, this.platforms);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-    this.cameras.main.setFollowOffset(this.world === 3 ? 0 : -65, 40);
+    this.cameras.main.setFollowOffset(0, 40);
     this.keys = this.input.keyboard!.addKeys('A,D,W,S,F,LEFT,RIGHT,SPACE,UP,E,ENTER,ESC') as Record<
       string,
       Phaser.Input.Keyboard.Key
@@ -142,8 +114,8 @@ export class Gateway extends Phaser.Scene {
     this.bowVisual = this.add.graphics().setDepth(12);
     this.prompt = this.add
       .text(0, 0, '', {
-        fontFamily: 'monospace',
-        fontSize: '12px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '16px',
         color: '#fff0d2',
         backgroundColor: '#17132ee8',
         padding: { x: 10, y: 8 },
@@ -161,7 +133,7 @@ export class Gateway extends Phaser.Scene {
     });
     this.logic = new Challenges(this);
     this.logic.create();
-    this.addSecrets();
+
     const pointerDown = (p: Phaser.Input.Pointer) => {
       if (!this.started || this.held || this.transitioning) return;
       if (this.bow && !this.drawing && p.downElement === this.game.canvas) {
@@ -237,20 +209,8 @@ export class Gateway extends Phaser.Scene {
         this.go(index);
     };
     const replay = () => {
-      const prefixes = [
-        ['intro'],
-        ['sport-', 'active-soul'],
-        ['arch-', 'sharp-eye'],
-        ['constellation', 'planets', 'telescope', 'cosmic-explorer'],
-        ['bug-', 'unity', 'skill-tree'],
-        ['boss'],
-        ['creator-of-worlds'],
-      ][this.world];
-      this.progress.tasks = this.progress.tasks.filter(
-        (t) => !prefixes.some((p) => t.startsWith(p)),
-      );
-      if (this.world === 0) this.progress.stars = [];
-      if (this.world === 2) this.progress.archer = false;
+      const prefixes = [['hobby-'], ['discovery-'], []][this.world];
+      this.progress.tasks = this.progress.tasks.filter(t => !prefixes.some(p => t.startsWith(p)));
       this.persist();
       this.go(this.world);
     };
@@ -282,19 +242,12 @@ export class Gateway extends Phaser.Scene {
     bridge.emit('world', this.world);
     bridge.emit('ready');
     this.cameras.main.fadeIn(650, 15, 12, 35);
-    if (this.world === 6) this.time.delayedCall(1500, () => bridge.emit('overlay', 'final'));
+
   }
   platform(x: number, y: number, w: number) {
-    const tile = this.add
-      .tileSprite(x, y, w, 48, 'tile')
-      .setOrigin(0)
-      .setTint(this.world === 4 ? 0xbb9aff : this.world === 1 ? 0xc0e2c8 : 0xffffff);
-    tile.setDepth(2);
-    const rock = this.add.graphics().setDepth(1);
-    rock.fillStyle(0x28243d);
-    rock.fillTriangle(x, y + 44, x + w, y + 44, x + w * 0.55, y + 95);
-    rock.fillStyle(0x403452);
-    rock.fillTriangle(x + w * 0.6, y + 46, x + w, y + 44, x + w * 0.55, y + 95);
+    const tile = this.add.rectangle(x + w / 2, y + 100, w, 200, 0x162b3c).setDepth(2);
+    const rock = this.add.rectangle(x + w / 2, y + 3, w, 6, worlds[this.world].color, 0.65).setDepth(3);
+    this.add.rectangle(x + w / 2, y + 16, w, 22, 0xffffff, 0.035).setDepth(3);
     const p = this.add.rectangle(x + w / 2, y + 8, w, 16, 0, 0);
     this.physics.add.existing(p, true);
     this.platforms.add(p);
@@ -304,54 +257,53 @@ export class Gateway extends Phaser.Scene {
   }
   background() {
     const width = worlds[this.world].width;
-    this.cameras.main.setBackgroundColor('#141126');
-    const bg = this.add
-      .image(
-        0,
-        0,
-        this.world === 0 ? 'cosmic' : 'worlds',
-        this.world === 0 ? undefined : this.world - 1,
-      )
-      .setOrigin(0)
-      .setScrollFactor(0.06)
-      .setAlpha(0.72);
-    bg.setDisplaySize(Math.max(1800, this.scale.width + width * 0.06), 900);
-    const resize = (size: Phaser.Structs.Size) =>
-      bg.setDisplaySize(Math.max(1800, size.width + width * 0.06), 900);
-    this.scale.on('resize', resize);
-    this.events.once('shutdown', () => this.scale.off('resize', resize));
-    const rand = new Phaser.Math.RandomDataGenerator(['ashify-' + this.world]);
-    for (let i = 0; i < 75; i++) {
-      const p = this.add
-        .rectangle(
-          rand.between(0, width),
-          rand.between(70, 660),
-          i % 5 ? 2 : 3,
-          i % 5 ? 2 : 3,
-          i % 2 ? 0xa1e5d6 : 0xe5cbff,
-          0.6,
-        )
-        .setScrollFactor(0.45);
-      this.tweens.add({
-        targets: p,
-        y: p.y - 25,
-        alpha: 0.1,
-        duration: rand.between(2000, 5000),
-        yoyo: true,
-        repeat: -1,
-      });
+    const key = 'smooth-sky-' + this.world;
+    if (!this.textures.exists(key)) {
+      const texture = this.textures.createCanvas(key, 1920, 1000)!;
+      const ctx = texture.context;
+      const sky = ctx.createLinearGradient(0, 0, 0, 1000);
+      const colors = [['#132b43', '#34586c', '#8ca7a0'], ['#0c1735', '#253768', '#6c6394'], ['#191831', '#40345e', '#8b7290']][this.world];
+      colors.forEach((c, i) => sky.addColorStop(i / 2, c));
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, 1920, 1000);
+      const glow = ctx.createRadialGradient(1300, 300, 0, 1300, 300, 650);
+      glow.addColorStop(0, '#c9baff44'); glow.addColorStop(1, '#c9baff00');
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, 1920, 1000);
+      for (let layer = 0; layer < 3; layer++) {
+        ctx.beginPath(); ctx.moveTo(0, 720 + layer * 60);
+        ctx.bezierCurveTo(400, 420 + layer * 90, 700, 900, 1100, 650 + layer * 50);
+        ctx.bezierCurveTo(1500, 400 + layer * 100, 1600, 760, 1920, 580 + layer * 90);
+        ctx.lineTo(1920, 1000); ctx.lineTo(0, 1000); ctx.closePath();
+        ctx.fillStyle = ['#20354855', '#20354888', '#14283fbb'][layer]; ctx.fill();
+      }
+      texture.refresh();
     }
-    this.label(100, 555, worlds[this.world].subtitle, 11);
+    const bg = this.add.image(0, 0, key).setOrigin(0).setScrollFactor(0);
+    const resize = () => bg.setDisplaySize(Math.max(this.scale.width, 900), 900);
+    resize(); this.scale.on('resize', resize);
+    this.events.once('shutdown', () => this.scale.off('resize', resize));
+    const moon = this.add.circle(850, 220, this.world === 1 ? 65 : 36, 0xe8e4ff, 0.8).setScrollFactor(0.12);
+    this.add.circle(850, 220, 95, 0xd7c5ff, 0.035).setScrollFactor(0.12);
+    this.tweens.add({targets: moon, y: 208, duration: 6000, yoyo: true, repeat: -1});
+    const rand = new Phaser.Math.RandomDataGenerator(['smooth-' + this.world]);
+    for (let i = 0; i < 44; i++) {
+      const dot = this.add.circle(rand.between(0, width), rand.between(100, 590), i % 4 ? 1.5 : 3, 0xe4e5ff, 0.5).setScrollFactor(0.3);
+      this.tweens.add({targets: dot, y: dot.y - 35, alpha: 0.12, duration: rand.between(2500, 6000), yoyo: true, repeat: -1});
+    }
+    for (let i = 0; i < 4; i++) {
+      const mist = this.add.ellipse(i * 650, 370 + i * 45, 600, 100, worlds[this.world].color, 0.035).setScrollFactor(0.15);
+      this.tweens.add({targets: mist, x: mist.x + 180, duration: 14000 + i * 2000, yoyo: true, repeat: -1});
+    }
   }
   label(x: number, y: number, text: string, size = 13, color = '#e3d3ed') {
     return this.add
       .text(x, y, text, {
-        fontFamily: 'monospace',
-        fontSize: size + 'px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: Math.max(16, size) + 'px',
         color,
         align: 'center',
         lineSpacing: 5,
       })
+      .setResolution(2)
       .setOrigin(0.5)
       .setDepth(5);
   }
@@ -380,31 +332,21 @@ export class Gateway extends Phaser.Scene {
   }
   portal(x: number, y: number, title: string, color = worlds[this.world].color) {
     const c = this.add.container(x, y).setDepth(3);
-    for (let i = 3; i >= 0; i--)
-      c.add(this.add.ellipse(0, 0, 90 + i * 14, 140 + i * 14, color, 0.035));
-    c.add(this.add.ellipse(0, 0, 76, 134, 0x211333).setStrokeStyle(3, color));
-    for (let i = 0; i < 9; i++) {
-      const a = (i * Math.PI) / 8;
-      c.add(
-        this.add
-          .rectangle(Math.cos(a) * 57, -Math.sin(a) * 78, 22, 22, 0x5a506c)
-          .setStrokeStyle(2, 0x8b759e),
-      );
+    for (let i = 7; i > 0; i--) c.add(this.add.ellipse(0, 0, 85 + i * 12, 140 + i * 10, color, 0.025));
+    c.add(this.add.ellipse(0, 0, 90, 145, 0x151a38, 0.9).setStrokeStyle(3, color));
+    for (let i = 0; i < 3; i++) {
+      const ring = this.add.ellipse(0, 0, 76 - i * 15, 128 - i * 20).setStrokeStyle(1.5, color, 0.7 - i * 0.15);
+      c.add(ring);
+      this.tweens.add({targets: ring, scaleX: 0.35, alpha: 0.2, duration: 1800 + i * 500, yoyo: true, repeat: -1});
     }
-    c.add(this.add.rectangle(-57, 24, 22, 98, 0x5a506c));
-    c.add(this.add.rectangle(57, 24, 22, 98, 0x5a506c));
-    const inner = this.add.ellipse(0, 0, 44, 85).setStrokeStyle(2, color, 0.8);
-    c.add(inner);
-    this.tweens.add({
-      targets: inner,
-      scaleX: 0.5,
-      scaleY: 0.8,
-      alpha: 0.3,
-      duration: 1500,
-      yoyo: true,
-      repeat: -1,
-    });
-    this.label(x, y - 115, title, 12);
+    for (let i = 0; i < 10; i++) {
+      const dot = this.add.circle(0, 0, 2, color); c.add(dot);
+      this.tweens.addCounter({from: i * Math.PI / 5, to: i * Math.PI / 5 + Math.PI * 2, duration: 4500, repeat: -1,
+        onUpdate: tween => {const a = tween.getValue() ?? 0; dot.setPosition(Math.cos(a) * 54, Math.sin(a) * 83);}});
+    }
+    const pool = this.add.ellipse(0, 78, 140, 18, color, 0.16); c.add(pool);
+    this.tweens.add({targets: pool, scaleX: 1.18, alpha: 0.3, duration: 1700, yoyo: true, repeat: -1});
+    this.label(x, y - 112, title, 18, '#ffffff');
     return c;
   }
   pose(frame: number, duration = 700) {
@@ -413,7 +355,7 @@ export class Gateway extends Phaser.Scene {
   }
   burst(x: number, y: number, color: number) {
     for (let i = 0; i < 16; i++) {
-      const p = this.add.image(x, y, 'pixel').setTint(color).setDepth(30);
+      const p = this.add.circle(x, y, 2.5, color).setDepth(30);
       this.tweens.add({
         targets: p,
         x: x + Phaser.Math.Between(-65, 65),
@@ -567,7 +509,7 @@ export class Gateway extends Phaser.Scene {
       .setText(hint)
       .setPosition(
         Phaser.Math.Clamp(this.player.x, 160, worlds[this.world].width - 160),
-        this.player.y - 63,
+        this.player.y + 85,
       )
       .setVisible(!!hint);
     if (this.drawing) {

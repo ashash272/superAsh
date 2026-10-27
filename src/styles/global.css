@@ -921,3 +921,34 @@ kbd {
     padding: 7px;
   }
 }
+
+/* Clear typography and a calmer, smooth portfolio presentation. */
+body { font-family: 'DM Sans', Arial, sans-serif; }
+button { border-radius: 10px; font-size: 14px; }
+.topbar nav button { font-size: 13px; }
+.topbar .work-shortcut { background: #dfc8fc; color: #211632; font-weight: 700; }
+.edition, footer, .bottom-note { font-size: 11px; letter-spacing: 0.8px; color: #d0c6de; }
+small, .eyebrow { font-size: 12px; letter-spacing: 1.2px; }
+p { font-size: 16px; color: #e0d7eb; }
+.primary { font-size: 14px; border-radius: 10px; box-shadow: 0 5px 24px #e5c59424; }
+h1 { text-shadow: 0 8px 40px #b79be244; }
+.hud { top: 20px; }
+.hud > div:first-child { background: #101a30d9; border: 1px solid #c3cfff26; border-radius: 14px; padding: 14px 18px; max-width: 660px; }
+.hud small { font-size: 11px; }
+.hud strong { font-size: 21px; letter-spacing: 0.7px; }
+.hud .objective { font-size: 14px; line-height: 1.5; color: #eee8f7; margin-bottom: 0; }
+.vignette { background: linear-gradient(#0c11231a, transparent 50%, #0c112333); }
+@media (max-width: 650px) {
+  .topbar { gap: 8px; }
+  .topbar nav { gap: 4px; }
+  .topbar nav button { padding: 9px 7px; font-size: 11px; }
+  .topbar nav button:nth-child(3) { display: none; }
+  .hud { left: 10px; right: 10px; top: 10px; }
+  .hud > div:first-child { padding: 10px 12px; }
+  .hud strong { font-size: 17px; }
+  .hud .objective { font-size: 12px; }
+  .bottom-note { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+.toast { top: 190px; bottom: auto; font-size: 14px; max-width: calc(100% - 32px); }

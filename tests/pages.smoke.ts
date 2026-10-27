@@ -20,7 +20,6 @@ test('Pages build loads the game and artwork under /superAsh/', async ({ page })
   await expect.poll(() => page.locator('.design-sheet').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   expect(assets).toContain('/superAsh/assets/character/ash-animations.png');
   expect(assets).toContain('/superAsh/assets/character/ash-approved.png');
-  expect(assets).toContain('/superAsh/assets/environments/cosmic.png');
-  expect(assets).toContain('/superAsh/assets/environments/worlds.png');
+
   expect(errors).toEqual([]);
 });

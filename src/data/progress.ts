@@ -22,38 +22,9 @@ export const categories = [
 }));
 export const social = { instagram: '' };
 export const worlds = [
-  {
-    name: 'COSMIC GATEWAY',
-    subtitle: 'A little curiosity goes a long way.',
-    width: 1800,
-    color: 0xb896f1,
-  },
-  { name: 'THE ACTIVE WORLD', subtitle: 'Powered by movement.', width: 3100, color: 0x8be0cb },
-  {
-    name: 'ARCHER’S FOREST',
-    subtitle: 'Find your focus. Trust your aim.',
-    width: 3100,
-    color: 0x92d4ab,
-  },
-  { name: 'THE OBSERVATORY', subtitle: 'Curiosity has no limits.', width: 2700, color: 0x99c9ff },
-  {
-    name: 'CREATOR’S DIMENSION',
-    subtitle: 'Seven skills. Countless ideas.',
-    width: 3700,
-    color: 0xd394ff,
-  },
-  {
-    name: 'THE IMPOSSIBLE IDEA',
-    subtitle: 'Every great world starts with a challenge.',
-    width: 1600,
-    color: 0xff87b5,
-  },
-  {
-    name: 'WELCOME TO MY UNIVERSE',
-    subtitle: 'I turn ideas into playable worlds.',
-    width: 1600,
-    color: 0xffd99b,
-  },
+  { name: 'A LITTLE ABOUT ASH', subtitle: 'Movement, focus, and a little play.', width: 2100, color: 0x8ee6d2 },
+  { name: 'THE OBSERVATORY', subtitle: 'Always curious about what comes next.', width: 1500, color: 0x99c9ff },
+  { name: 'THE PORTFOLIO', subtitle: 'I turn ideas into playable worlds.', width: 2850, color: 0xd394ff },
 ];
 export type Progress = {
   stars: number[];
@@ -72,7 +43,7 @@ export const emptyProgress = (): Progress => ({
   tasks: [],
   secrets: [],
   world: 0,
-  unlockedWorld: 0,
+  unlockedWorld: 2,
   finished: false,
 });
 const strings = (a: unknown) =>
@@ -80,11 +51,11 @@ const strings = (a: unknown) =>
 export function readProgress(): Progress {
   try {
     const p = JSON.parse(
-      localStorage.getItem('ashify-v2') || localStorage.getItem('ashify-v1') || 'null',
+      localStorage.getItem('ashify-v3') || localStorage.getItem('ashify-v2') || localStorage.getItem('ashify-v1') || 'null',
     );
     if (!p || typeof p !== 'object') return emptyProgress();
     const unlockedWorld = Number.isInteger(p.unlockedWorld)
-      ? Math.max(0, Math.min(6, p.unlockedWorld))
+      ? Math.max(0, Math.min(2, p.unlockedWorld))
       : 0;
     return {
       stars: Array.isArray(p.stars)
@@ -100,8 +71,8 @@ export function readProgress(): Progress {
       skills: strings(p.skills).filter((s) => categories.some((c) => c.id === s)),
       tasks: strings(p.tasks),
       secrets: strings(p.secrets),
-      world: Number.isInteger(p.world) ? Math.max(0, Math.min(unlockedWorld, p.world)) : 0,
-      unlockedWorld,
+      world: localStorage.getItem('ashify-v3') && Number.isInteger(p.world) ? Math.max(0, Math.min(2, p.world)) : 0,
+      unlockedWorld: 2,
       finished: p.finished === true,
     };
   } catch {
@@ -110,7 +81,7 @@ export function readProgress(): Progress {
 }
 export function saveProgress(p: Progress) {
   try {
-    localStorage.setItem('ashify-v2', JSON.stringify(p));
+    localStorage.setItem('ashify-v3', JSON.stringify(p));
   } catch {
     /* Saving unavailable: keep session playable. */
   }

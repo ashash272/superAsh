@@ -3,11 +3,11 @@ export default defineConfig({
   testDir: './tests',
   timeout: 30000,
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: 'http://127.0.0.1:5181',
     viewport: { width: 1440, height: 1000 },
     launchOptions: { executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' },
     screenshot: 'only-on-failure',
   },
-  webServer: { command: 'npm run dev', url: 'http://127.0.0.1:5173', reuseExistingServer: true },
+  webServer: { command: 'npm run dev -- --port 5181 --strictPort', url: 'http://127.0.0.1:5181', reuseExistingServer: false },
   reporter: 'list',
 });
