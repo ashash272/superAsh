@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.playwright/
+test-results/
+my-assets/
+*.log
+.npm-cache/
