@@ -1,3 +1,4 @@
+import { assetUrl } from './data/assets';
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { Gateway } from './game/Gateway';
@@ -36,6 +37,7 @@ export default function App() {
     [location, setLocation] = useState('COSMIC GATEWAY'),
     [world, setWorld] = useState(0),
     [objective, setObjective] = useState(''),
+    [bowEquipped, setBowEquipped] = useState(false),
     [boss, setBoss] = useState(3),
     [muted, setMuted] = useState(false),
     [portrait, setPortrait] = useState(false),
@@ -63,6 +65,7 @@ export default function App() {
       location: setLocation,
       world: setWorld,
       objective: setObjective,
+      equipment: setBowEquipped,
       boss: setBoss,
       overlay: setOverlay,
       showcase: (id: string) => {
@@ -234,6 +237,11 @@ export default function App() {
               <small>{String(world + 1).padStart(2, '0')} / THE ADVENTURE</small>
               <strong>{location}</strong>
               <p className="objective">{objective}</p>
+              {bowEquipped && (
+                <p className="objective" data-testid="bow-status">
+                  BOW EQUIPPED · Hold left click / touch or F, release to shoot. W / S: aim.
+                </p>
+              )}
             </div>
             <div className="counters">
               <span className="hearts">
@@ -326,8 +334,12 @@ export default function App() {
                     <b>Stretch toward the star</b>
                     <span>Hold & release on world</span>
                     <b>Aim & shoot your bow</b>
+                    <span>W / S + hold / release F</span>
+                    <b>Keyboard aiming & shooting</b>
                     <span>Click or tap stars / planets</span>
                     <b>Solve cosmic puzzles</b>
+                    <span>1–5 near stars / E near planets</span>
+                    <b>Keyboard puzzle controls</b>
                     <span>
                       <kbd>ESC</kbd>
                     </span>
@@ -396,7 +408,7 @@ export default function App() {
                   <small>✦ CHARACTER UNLOCKED ✦</small>
                   <div className="portrait-crop">
                     <img
-                      src="/assets/character/ash-approved.png"
+                      src={assetUrl('assets/character/ash-approved.png')}
                       alt="Ash in her black hijab and black sweatshirt"
                     />
                   </div>
@@ -420,7 +432,7 @@ export default function App() {
                       {medium.type === 'video' ? (
                         <video
                           key={medium.src}
-                          src={medium.src}
+                          src={assetUrl(medium.src)}
                           autoPlay
                           muted
                           playsInline
@@ -428,7 +440,7 @@ export default function App() {
                           preload="metadata"
                         />
                       ) : (
-                        <img key={medium.src} src={medium.src} alt={medium.alt} />
+                        <img key={medium.src} src={assetUrl(medium.src)} alt={medium.alt} />
                       )}
                     </div>
                   ) : (
@@ -544,7 +556,7 @@ export default function App() {
                   <h2>Ready for an adventure.</h2>
                   <img
                     className="design-sheet"
-                    src="/assets/character/ash-approved.png"
+                    src={assetUrl('assets/character/ash-approved.png')}
                     alt="Ash wearing a natural black hijab, black sweatshirt and grey sweatpants"
                   />
                   <p className="muted">
@@ -589,9 +601,15 @@ export default function App() {
                           <p>{p.description}</p>
                           {p.media.map((m) =>
                             m.type === 'image' ? (
-                              <img loading="lazy" key={m.src} src={m.src} alt={m.alt} />
+                              <img loading="lazy" key={m.src} src={assetUrl(m.src)} alt={m.alt} />
                             ) : (
-                              <video key={m.src} src={m.src} controls preload="none" playsInline />
+                              <video
+                                key={m.src}
+                                src={assetUrl(m.src)}
+                                controls
+                                preload="none"
+                                playsInline
+                              />
                             ),
                           )}
                           <p>{p.technologies.join(' · ')}</p>
@@ -673,6 +691,7 @@ export default function App() {
                   e.preventDefault();
                   e.currentTarget.setPointerCapture(e.pointerId);
                   touch[key] = true;
+                  if (key === 'interact') bridge.emit('interact');
                 }}
                 onPointerUp={() => (touch[key] = false)}
                 onPointerCancel={() => (touch[key] = false)}

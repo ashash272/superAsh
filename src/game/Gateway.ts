@@ -1,3 +1,4 @@
+import { assetUrl } from '../data/assets';
 import Phaser from 'phaser';
 import { createArt } from './art';
 import { audio, bridge, touch, clearTouch } from './bridge';
@@ -21,6 +22,10 @@ export class Gateway extends Phaser.Scene {
   invulnerableUntil = 0;
   bow = false;
   drawing = 0;
+  drawPointer: Phaser.Input.Pointer | null = null;
+  keyboardDraw = false;
+  aimAngle = -0.35;
+  bowVisual!: Phaser.GameObjects.Graphics;
   lastInteract = false;
   interactQueued = false;
   aim!: Phaser.GameObjects.Graphics;
@@ -45,8 +50,11 @@ export class Gateway extends Phaser.Scene {
     this.health = 3;
     this.checkpoint = 120;
     this.invulnerableUntil = 0;
-    this.bow = this.world === 5;
+    this.bow = this.world === 5 || (this.world === 2 && this.has('arch-bow'));
     this.drawing = 0;
+    this.drawPointer = null;
+    this.keyboardDraw = false;
+    this.aimAngle = -0.35;
     this.lastInteract = false;
     this.interactQueued = false;
     this.poseUntil = 0;
@@ -54,12 +62,12 @@ export class Gateway extends Phaser.Scene {
     clearTouch();
   }
   preload() {
-    this.load.image('cosmic', '/assets/environments/cosmic.png');
-    this.load.spritesheet('worlds', '/assets/environments/worlds.png', {
+    this.load.image('cosmic', assetUrl('assets/environments/cosmic.png'));
+    this.load.spritesheet('worlds', assetUrl('assets/environments/worlds.png'), {
       frameWidth: 836,
       frameHeight: 313,
     });
-    this.load.spritesheet('ash-atlas', '/assets/character/ash-animations.png', {
+    this.load.spritesheet('ash-atlas', assetUrl('assets/character/ash-animations.png'), {
       frameWidth: 192,
       frameHeight: 256,
     });
@@ -118,8 +126,8 @@ export class Gateway extends Phaser.Scene {
     this.player.setSize(68, 192).setOffset(64, 54).setMaxVelocity(290, 750).setDragX(1800);
     this.physics.add.collider(this.player, this.platforms);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-    this.cameras.main.setFollowOffset(-65, 40);
-    this.keys = this.input.keyboard!.addKeys('A,D,LEFT,RIGHT,SPACE,UP,E,ENTER,ESC') as Record<
+    this.cameras.main.setFollowOffset(this.world === 3 ? 0 : -65, 40);
+    this.keys = this.input.keyboard!.addKeys('A,D,W,S,F,LEFT,RIGHT,SPACE,UP,E,ENTER,ESC') as Record<
       string,
       Phaser.Input.Keyboard.Key
     >;
@@ -127,9 +135,11 @@ export class Gateway extends Phaser.Scene {
       if (!this.held) this.interactQueued = true;
     };
     this.input.keyboard!.on('keydown-E', queue);
+    bridge.on('interact', queue);
     this.arrows = this.physics.add.group();
     this.physics.add.collider(this.arrows, this.platforms, (a) => a.destroy());
     this.aim = this.add.graphics().setDepth(13);
+    this.bowVisual = this.add.graphics().setDepth(12);
     this.prompt = this.add
       .text(0, 0, '', {
         fontFamily: 'monospace',
@@ -154,22 +164,46 @@ export class Gateway extends Phaser.Scene {
     this.addSecrets();
     const pointerDown = (p: Phaser.Input.Pointer) => {
       if (!this.started || this.held || this.transitioning) return;
-      if (this.bow && p.downElement === this.game.canvas) {
-        this.drawing = this.worldTime;
+      if (this.bow && !this.drawing && p.downElement === this.game.canvas) {
+        this.drawPointer = p;
+        this.drawing = Math.max(1, this.worldTime);
         audio.play(220);
       }
     };
     const pointerUp = (p: Phaser.Input.Pointer) => {
-      if (this.drawing && !this.held) {
+      if (this.drawing && this.drawPointer?.id === p.id && !this.held) {
         this.shoot(p);
-        this.drawing = 0;
+        this.cancelDraw();
       }
     };
+    const cancelPointer = () => this.cancelDraw();
     this.input.on('pointerdown', pointerDown);
     this.input.on('pointerup', pointerUp);
+    this.input.on('pointerupoutside', pointerUp);
+    this.game.canvas.addEventListener('touchcancel', cancelPointer);
+    const fireDown = (event: KeyboardEvent) => {
+      if (
+        event.repeat ||
+        !this.bow ||
+        !this.started ||
+        this.held ||
+        this.transitioning ||
+        this.drawing
+      )
+        return;
+      this.keyboardDraw = true;
+      this.drawing = Math.max(1, this.worldTime);
+      audio.play(220);
+    };
+    const fireUp = () => {
+      if (this.keyboardDraw && !this.held && !this.transitioning) this.shoot();
+      if (this.keyboardDraw) this.cancelDraw();
+    };
+    this.input.keyboard!.on('keydown-F', fireDown);
+    this.input.keyboard!.on('keyup-F', fireUp);
     const pause = (v: boolean) => {
       this.held = v;
-      this.drawing = 0;
+      this.cancelDraw();
       this.interactQueued = false;
       clearTouch();
       if (v) {
@@ -232,12 +266,18 @@ export class Gateway extends Phaser.Scene {
       bridge.off('skill-complete', complete);
       bridge.off('travel', travel);
       this.input.keyboard?.off('keydown-E', queue);
+      bridge.off('interact', queue);
       this.input.off('pointerdown', pointerDown);
       this.input.off('pointerup', pointerUp);
+      this.input.off('pointerupoutside', pointerUp);
+      this.game.canvas.removeEventListener('touchcancel', cancelPointer);
+      this.input.keyboard?.off('keydown-F', fireDown);
+      this.input.keyboard?.off('keyup-F', fireUp);
       this.logic.destroy();
     });
     this.persist();
     bridge.emit('health', 3);
+    bridge.emit('equipment', this.bow);
     bridge.emit('location', worlds[this.world].name);
     bridge.emit('world', this.world);
     bridge.emit('ready');
@@ -423,9 +463,27 @@ export class Gateway extends Phaser.Scene {
     this.player.setPosition(this.checkpoint, 550).setVelocity(0, 0);
     this.hurt();
   }
-  shoot(p: Phaser.Input.Pointer) {
-    const w = this.cameras.main.getWorldPoint(p.x, p.y);
-    const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y - 10, w.x, w.y);
+  cancelDraw() {
+    this.drawing = 0;
+    this.drawPointer = null;
+    this.keyboardDraw = false;
+    this.aim?.clear();
+  }
+  equipBow() {
+    this.bow = true;
+    if (this.world === 2 && !this.has('arch-bow')) {
+      this.progress.tasks.push('arch-bow');
+      this.persist();
+    }
+    this.pose(16, 700);
+    bridge.emit('equipment', true);
+  }
+  shoot(p?: Phaser.Input.Pointer) {
+    if (p) {
+      const w = this.cameras.main.getWorldPoint(p.x, p.y);
+      this.aimAngle = Phaser.Math.Angle.Between(this.player.x, this.player.y - 10, w.x, w.y);
+    }
+    const angle = this.aimAngle;
     const speed = 520 + Math.min(850, this.worldTime - this.drawing) * 0.4;
     const a = this.arrows.create(
       this.player.x,
@@ -445,6 +503,7 @@ export class Gateway extends Phaser.Scene {
   go(index: number) {
     if (this.transitioning) return;
     this.transitioning = true;
+    this.cancelDraw();
     this.time.paused = false;
     this.tweens.resumeAll();
     this.progress.world = index;
@@ -472,6 +531,13 @@ export class Gateway extends Phaser.Scene {
     const dir =
       Number(this.keys.D.isDown || this.keys.RIGHT.isDown || touch.right) -
       Number(this.keys.A.isDown || this.keys.LEFT.isDown || touch.left);
+    if (this.bow && !this.drawPointer) {
+      if (dir < 0 && Math.cos(this.aimAngle) > 0) this.aimAngle = -Math.PI - this.aimAngle;
+      if (dir > 0 && Math.cos(this.aimAngle) < 0) this.aimAngle = -Math.PI - this.aimAngle;
+      const tilt = Number(this.keys.S.isDown) - Number(this.keys.W.isDown);
+      this.aimAngle +=
+        tilt * Math.sign(Math.cos(this.aimAngle) || 1) * Math.min(delta, 50) * 0.0015;
+    }
     const interact = touch.interact || this.keys.E.isDown;
     const edge = this.interactQueued || (touch.interact && !this.lastInteract);
     this.interactQueued = false;
@@ -504,31 +570,49 @@ export class Gateway extends Phaser.Scene {
         this.player.y - 63,
       )
       .setVisible(!!hint);
-    if (this.poseUntil > time) {
-      this.player.anims.stop();
-      this.player.setFrame(this.poseFrame);
-    } else if (this.drawing) {
+    if (this.drawing) {
       this.player.anims.stop();
       this.player.setFrame(17);
+    } else if (this.poseUntil > time) {
+      this.player.anims.stop();
+      this.player.setFrame(this.poseFrame);
     } else if (!body.blocked.down) {
       this.player.anims.stop();
       this.player.setFrame(body.velocity.y < 0 ? 13 : 14);
     } else if (Math.abs(body.velocity.x) > 15) this.player.play('ash-run', true);
-    else this.player.play('ash-idle', true);
+    else if (this.bow) {
+      this.player.anims.stop();
+      this.player.setFrame(19);
+    } else this.player.play('ash-idle', true);
+    // The run/jump atlas frames have no equipment, so attach a bow while moving.
+    this.bowVisual.clear();
+    const embeddedBow = [16, 17, 19].includes(Number(this.player.frame.name));
+    this.bowVisual.setVisible(this.bow && !embeddedBow);
+    if (this.bow && !embeddedBow) {
+      this.bowVisual.lineStyle(2, 0xe4c388).beginPath();
+      this.bowVisual.arc(this.player.x + 15, this.player.y - 5, 20, -1.2, 1.2).strokePath();
+      this.bowVisual.lineStyle(1, 0xf4ddaa);
+      this.bowVisual.lineBetween(
+        this.player.x + 22,
+        this.player.y - 24,
+        this.player.x + 22,
+        this.player.y + 14,
+      );
+    }
     if (body.blocked.down && !this.wasGrounded) {
       this.pose(15, 120);
     }
     this.wasGrounded = body.blocked.down;
     this.aim.clear();
-    if (this.drawing) {
-      const w = this.cameras.main.getWorldPoint(
-          this.input.activePointer.x,
-          this.input.activePointer.y,
-        ),
-        a = Phaser.Math.Angle.Between(this.player.x, this.player.y - 10, w.x, w.y),
-        v = 520 + Math.min(850, time - this.drawing) * 0.4;
-      this.aim.fillStyle(0xffdf9b, 0.85);
-      for (let t = 0.08; t < 0.9; t += 0.08)
+    if (this.bow) {
+      if (this.drawPointer) {
+        const w = this.cameras.main.getWorldPoint(this.drawPointer.x, this.drawPointer.y);
+        this.aimAngle = Phaser.Math.Angle.Between(this.player.x, this.player.y - 10, w.x, w.y);
+      }
+      const a = this.aimAngle,
+        v = 520 + (this.drawing ? Math.min(850, time - this.drawing) * 0.4 : 0);
+      this.aim.fillStyle(0xffdf9b, this.drawing ? 0.85 : 0.35);
+      for (let t = 0.08; t < (this.drawing ? 0.9 : 0.35); t += 0.08)
         this.aim.fillCircle(
           this.player.x + Math.cos(a) * v * t,
           this.player.y - 10 + Math.sin(a) * v * t + 175 * t * t,

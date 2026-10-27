@@ -398,3 +398,214 @@ test('world map locks, pause freezes gameplay, replay resets only current challe
     await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').player.x),
   ).toBeGreaterThan(150);
 });
+
+test('bow stays equipped after pickup, supports keyboard fire and survives reload', async ({
+  page,
+}) => {
+  await setup(page, 2);
+  await move(page, 320);
+  await tap(page);
+  await page.waitForTimeout(1000);
+  await expect(page.getByTestId('bow-status')).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      Number((window as any).__ashify.scene.getScene('Gateway').player.frame.name),
+    ),
+  ).toBe(19);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(180);
+  expect(
+    await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').bowVisual.visible),
+  ).toBe(true);
+  await page.keyboard.up('d');
+  // First target at (650, 565): a ground-level shot aimed slightly upward.
+  await move(page, 550);
+  const initialAngle = await page.evaluate(
+    () => (window as any).__ashify.scene.getScene('Gateway').aimAngle,
+  );
+  await page.keyboard.down('w');
+  await page.waitForTimeout(80);
+  await page.keyboard.up('w');
+  expect(
+    await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').aimAngle),
+  ).toBeLessThan(initialAngle);
+  await page.keyboard.down('f');
+  await page.waitForTimeout(350);
+  expect(
+    await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').keyboardDraw),
+  ).toBe(true);
+  await page.keyboard.up('f');
+  await expect.poll(() => has(page, 'arch-target-0')).toBe(true);
+  await page.keyboard.down('f');
+  await page.waitForTimeout(80);
+  await page.getByRole('button', { name: 'Pause game' }).click();
+  await page.keyboard.up('f');
+  expect(
+    await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').drawing),
+  ).toBe(0);
+  await page.getByRole('button', { name: 'RESUME ADVENTURE' }).click();
+  await page.reload();
+  await page.getByRole('button', { name: 'CONTINUE ADVENTURE' }).click();
+  await expect(page.getByTestId('bow-status')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').bow)).toBe(
+    true,
+  );
+});
+
+test('touch aiming releases an arrow without using the movement pointer', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await context.newPage();
+  await setup(page, 2);
+  await move(page, 320);
+  await page.getByRole('button', { name: 'interact', exact: true }).tap();
+  await page.waitForTimeout(900);
+  await expect(page.getByTestId('bow-status')).toBeVisible();
+  await move(page, 550);
+  const pt = await page.evaluate(() => {
+    const s = (window as any).__ashify.scene.getScene('Gateway'),
+      c = s.cameras.main,
+      r = s.game.canvas.getBoundingClientRect();
+    return { x: r.left + 650 - c.scrollX, y: r.top + 555 - c.scrollY };
+  });
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x: pt.x, y: pt.y, id: 11 }],
+  });
+  await page.waitForTimeout(300);
+  expect(
+    await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').drawing),
+  ).toBeGreaterThan(0);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect.poll(() => has(page, 'arch-target-0')).toBe(true);
+  await context.close();
+});
+
+test('astronomy guide preserves correct stars, locks planets and explains the exit', async ({
+  page,
+}) => {
+  await setup(page, 3);
+  await expect(page.getByText(/Step 1\/3: click or tap star 1/)).toBeVisible();
+  await move(page, 610);
+  for (const key of ['1', '2', '5']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(90);
+  }
+  expect(
+    await page.evaluate(
+      () => (window as any).__ashify.scene.getScene('Gateway').logic.constellationStep,
+    ),
+  ).toBe(2);
+  await expect(page.getByText(/Step 1\/3: click or tap star 3/)).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'CONTINUE ADVENTURE' }).click();
+  await move(page, 610);
+  expect(
+    await page.evaluate(
+      () => (window as any).__ashify.scene.getScene('Gateway').logic.constellationStep,
+    ),
+  ).toBe(2);
+  for (const key of ['3', '4', '5']) {
+    await page.keyboard.press(key);
+    await page.waitForTimeout(90);
+  }
+  await expect(page.getByText(/Step 2\/3:/)).toBeVisible();
+  await move(page, 1520);
+  for (let i = 0; i < 6; i++) await tap(page);
+  expect(
+    await page.evaluate(
+      () => (window as any).__ashify.scene.getScene('Gateway').logic.planetAngles[0],
+    ),
+  ).toBe(0);
+  async function clickTurn(index: number) {
+    const pt = await page.evaluate((i) => {
+      const s = (window as any).__ashify.scene.getScene('Gateway'),
+        b = s.logic.planetButtons[i],
+        c = s.cameras.main,
+        r = s.game.canvas.getBoundingClientRect();
+      return { x: r.left + b.x - c.scrollX, y: r.top + b.y - c.scrollY };
+    }, index);
+    await page.mouse.click(pt.x, pt.y);
+    await page.waitForTimeout(80);
+  }
+  await clickTurn(0);
+  expect(
+    await page.evaluate(
+      () => (window as any).__ashify.scene.getScene('Gateway').logic.planetAngles[0],
+    ),
+  ).toBe(0);
+  for (let i = 0; i < 3; i++) await clickTurn(1);
+  for (let i = 0; i < 7; i++) await clickTurn(2);
+  await expect(page.getByText(/Step 3\/3:/)).toBeVisible();
+  await move(page, 2530);
+  expect(
+    await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').prompt.text),
+  ).toContain('Telescope discovery');
+  await move(page, 2210);
+  await tap(page);
+  await page.getByRole('button', { name: 'BACK TO THE OBSERVATORY' }).click();
+  await expect(page.getByText(/All three discoveries complete!/)).toBeVisible();
+  await move(page, 2530);
+  await tap(page);
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').world))
+    .toBe(4);
+});
+
+test('astronomy touch targets and fixed TURN buttons fit a phone viewport', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await context.newPage();
+  await setup(page, 3);
+  await move(page, 430);
+  const star = await page.evaluate(() => {
+    const s = (window as any).__ashify.scene.getScene('Gateway'),
+      t = s.logic.constellationStars[0],
+      c = s.cameras.main,
+      r = s.game.canvas.getBoundingClientRect();
+    return { x: r.left + t.x - c.scrollX + 20, y: r.top + t.y - c.scrollY };
+  });
+  // Touch the forgiving hit area, outside the small visible star itself.
+  await page.touchscreen.tap(star.x, star.y);
+  await page.waitForTimeout(100);
+  expect(
+    await page.evaluate(
+      () => (window as any).__ashify.scene.getScene('Gateway').logic.constellationStep,
+    ),
+  ).toBe(1);
+  await move(page, 1520);
+  await page.waitForTimeout(500);
+  const buttons = await page.evaluate(() => {
+    const s = (window as any).__ashify.scene.getScene('Gateway'),
+      c = s.cameras.main,
+      r = s.game.canvas.getBoundingClientRect();
+    return s.logic.planetButtons.map((b: any) => ({
+      x: r.left + b.x - c.scrollX,
+      y: r.top + b.y - c.scrollY,
+      left: r.left + b.x - b.width / 2 - c.scrollX,
+      right: r.left + b.x + b.width / 2 - c.scrollX,
+    }));
+  });
+  for (const b of buttons) {
+    expect(b.left).toBeGreaterThan(0);
+    expect(b.right).toBeLessThan(390);
+  }
+  for (let i = 0; i < 6; i++) {
+    await page.touchscreen.tap(buttons[0].x, buttons[0].y);
+    await page.waitForTimeout(70);
+  }
+  expect(
+    await page.evaluate(
+      () => (window as any).__ashify.scene.getScene('Gateway').logic.planetAngles[0],
+    ),
+  ).toBe(0);
+  await page.screenshot({ path: 'tests/astronomy-mobile-preview.png', animations: 'disabled' });
+  await context.close();
+});

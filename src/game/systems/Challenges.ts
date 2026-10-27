@@ -31,6 +31,12 @@ export class Challenges {
   constellationStep = 0;
   constellationStars: Phaser.GameObjects.Star[] = [];
   starLines?: Phaser.GameObjects.Graphics;
+  nextStarRing?: Phaser.GameObjects.Arc;
+  constellationLabel?: Phaser.GameObjects.Text;
+  planetLabel?: Phaser.GameObjects.Text;
+  planetButtons: Phaser.GameObjects.Text[] = [];
+  astronomyKeyHandler?: (event: KeyboardEvent) => void;
+  lastObjective = '';
   planetAngles = [2, 5, 1];
   planets: Phaser.GameObjects.Arc[] = [];
   planetGraphics?: Phaser.GameObjects.Graphics;
@@ -40,6 +46,8 @@ export class Challenges {
   bossNextAttack = 0;
   bossLabel?: Phaser.GameObjects.Text;
   movingYoga?: Phaser.Tweens.Tween;
+  bowPickup?: Phaser.GameObjects.Graphics;
+  bowPickupLabel?: Phaser.GameObjects.Text;
   skillPortals: Phaser.GameObjects.Container[] = [];
   constructor(s: Gateway) {
     this.s = s;
@@ -67,6 +75,8 @@ export class Challenges {
       );
   }
   objective(text: string) {
+    if (this.lastObjective === text) return;
+    this.lastObjective = text;
     bridge.emit('objective', text);
   }
   intro() {
@@ -193,8 +203,10 @@ export class Challenges {
   archery() {
     const s = this.s;
     this.targets = s.physics.add.group({ allowGravity: false, immovable: true });
-    s.label(320, 520, 'E · PICK UP YOUR BOW', 12);
+    this.bowPickupLabel = s.label(320, 520, s.bow ? 'BOW EQUIPPED ✓' : 'E · PICK UP YOUR BOW', 12);
     const bow = s.add.graphics();
+    this.bowPickup = bow;
+    bow.setVisible(!s.bow);
     bow.lineStyle(3, 0xe4c388);
     bow.beginPath();
     bow.arc(320, 580, 25, -1.2, 1.2);
@@ -269,35 +281,66 @@ export class Challenges {
       [700, 350],
       [790, 395],
     ];
-    s.label(610, 285, 'TRACE A CONSTELLATION · 1 → 5', 13);
+    this.constellationStep = s.has('constellation') ? 5 : 0;
+    while (this.constellationStep < 5 && s.has('constellation-star-' + this.constellationStep))
+      this.constellationStep++;
+    this.constellationLabel = s
+      .label(610, 270, '', 14)
+      .setBackgroundColor('#17132ee8')
+      .setPadding(12);
+    this.nextStarRing = s.add.circle(430, 410, 28).setStrokeStyle(3, 0xffe7a1).setDepth(6);
     starPoints.forEach(([x, y], i) => {
       const star = s.add
-        .star(x, y, 4, 7, 16, s.has('constellation') ? 0x8ee9dd : 0xffdc9e)
+        .star(x, y, 4, 7, 16, i < this.constellationStep ? 0x8ee9dd : 0xffdc9e)
         .setDepth(7)
-        .setInteractive({ useHandCursor: true });
-      s.label(x, y + 28, String(i + 1), 12);
+        .setInteractive(new Phaser.Geom.Circle(16, 16, 28), Phaser.Geom.Circle.Contains);
+      s.label(x, y + 34, String(i + 1), 16)
+        .setBackgroundColor('#17132edb')
+        .setPadding(4);
       star.on('pointerdown', () => {
-        if (!s.started || s.held || Math.abs(s.player.x - x) > 600) return;
+        if (!s.started || s.held) return;
+        if (Math.abs(s.player.x - x) > 600) {
+          bridge.emit('toast', 'Walk closer to the numbered stars first.');
+          return;
+        }
         this.connectStar(i);
       });
       this.constellationStars.push(star);
+      if (i > 0 && i < this.constellationStep) {
+        const previous = this.constellationStars[i - 1];
+        this.starLines!.lineStyle(2, 0x9ee7fb).lineBetween(previous.x, previous.y, x, y);
+      }
     });
-    s.label(1520, 290, 'PLANET ALIGNMENT\nCLICK EACH PLANET UNTIL IT MEETS ITS GOLD MARKER', 12);
-    this.planetAngles = s.has('planets') ? [0, 0, 0] : [2, 5, 1];
+    this.planetLabel = s.label(1520, 290, '', 13).setBackgroundColor('#17132ee8').setPadding(12);
+    this.planetAngles = [2, 5, 1].map((angle, i) =>
+      s.has('planets') || s.has('planets-' + i) ? 0 : angle,
+    );
     for (let i = 0; i < 3; i++) {
       const p = s.add
         .circle(1400 + i * 120, 405, 18, [0xc6a6f3, 0x8acbdd, 0xe5a2ac][i])
         .setDepth(7)
-        .setInteractive({ useHandCursor: true });
+        .setInteractive(new Phaser.Geom.Circle(18, 18, 28), Phaser.Geom.Circle.Contains);
       p.on('pointerdown', () => {
-        if (!s.started || s.held || Math.abs(s.player.x - 1520) > 600) return;
-        this.planetAngles[i] = (this.planetAngles[i] + 1) % 8;
-        audio.play(440 + i * 110);
-        if (this.planetAngles.every((a) => a === 0))
-          s.complete('planets', 'PLANETS ALIGNED · A tiny dance of gravity.');
+        this.rotatePlanet(i);
       });
       this.planets.push(p);
+      const button = s
+        .label(1400 + i * 120, 495, 'TURN ' + (i + 1), 13)
+        .setBackgroundColor('#241c3dec')
+        .setPadding(14, 12)
+        .setDepth(8)
+        .setInteractive({ useHandCursor: true });
+      button.on('pointerdown', () => this.rotatePlanet(i));
+      this.planetButtons.push(button);
     }
+    this.astronomyKeyHandler = (event: KeyboardEvent) => {
+      if (!s.started || s.held || event.repeat || s.player.x > 1050) return;
+      const index = Number(event.key) - 1;
+      if (Number.isInteger(index) && index >= 0 && index < 5) {
+        if (Math.abs(s.player.x - this.constellationStars[index].x) <= 600) this.connectStar(index);
+      }
+    };
+    s.input.keyboard!.on('keydown', this.astronomyKeyHandler);
     const telescope = s.add.graphics().setDepth(4);
     telescope.lineStyle(6, 0x887ba5);
     telescope.lineBetween(2210, 590, 2180, 640);
@@ -308,16 +351,77 @@ export class Challenges {
     telescope.lineStyle(23, 0x8ed8e8);
     telescope.lineBetween(2240, 542, 2250, 538);
     s.label(2210, 490, 'E · LOOK THROUGH THE TELESCOPE', 11);
-    this.objective('Trace the stars, align three planets, and discover the telescope.');
+    this.updateAstronomyGuide();
+  }
+  rotatePlanet(index: number) {
+    const s = this.s;
+    if (!s.started || s.held) return;
+    if (Math.abs(s.player.x - 1520) > 600) {
+      bridge.emit('toast', 'Walk closer to the three planet rings first.');
+      return;
+    }
+    // An aligned planet locks, so another tap cannot undo a solved ring.
+    if (this.planetAngles[index] === 0) return;
+    this.planetAngles[index] = (this.planetAngles[index] + 1) % 8;
+    audio.play(440 + index * 110);
+    if (this.planetAngles[index] === 0) {
+      s.complete('planets-' + index, `PLANET ${index + 1} ALIGNED ✓ · This ring is now locked.`);
+    }
+    if (this.planetAngles.every((a) => a === 0))
+      s.complete('planets', 'PLANETS ALIGNED · Walk right to the telescope, then press E.');
+    this.updateAstronomyGuide();
+  }
+  updateAstronomyGuide() {
+    const s = this.s;
+    const linked = this.constellationStep;
+    const aligned = this.planetAngles.filter((a) => a === 0).length;
+    if (linked === 5 && !s.has('constellation'))
+      s.complete('constellation', 'CONSTELLATION COMPLETE ✓');
+    if (aligned === 3 && !s.has('planets')) s.complete('planets', 'PLANETS ALIGNED ✓');
+    // On narrow screens the persistent HUD carries the guide instead of clipped world headings.
+    this.constellationLabel?.setVisible(s.scale.width >= 650).setWordWrapWidth(440);
+    this.planetLabel?.setVisible(s.scale.width >= 650).setWordWrapWidth(440);
+    this.constellationLabel?.setText(
+      linked === 5
+        ? '1. CONSTELLATION COMPLETE ✓\nWalk right to the three planets →'
+        : `1. CLICK / TAP STAR ${linked + 1}\nFollow 1 → 2 → 3 → 4 → 5 · Keyboard: number keys`,
+    );
+    this.planetLabel?.setText(
+      aligned === 3
+        ? '2. ALL PLANETS ALIGNED ✓\nWalk right to the telescope →'
+        : `2. MOVE EACH PLANET TO ITS GOLD DOT ON THE RIGHT\nTap TURN or the planet · E turns the next unsolved ring · ${aligned}/3 aligned`,
+    );
+    this.planetButtons.forEach((button, i) =>
+      button
+        .setText(this.planetAngles[i] === 0 ? 'LOCKED ✓' : 'TURN ' + (i + 1))
+        .setColor(this.planetAngles[i] === 0 ? '#8ee9dd' : '#fff0d2'),
+    );
+    const x = !s.has('constellation')
+      ? 610
+      : !s.has('planets')
+        ? 1520
+        : !s.has('telescope')
+          ? 2210
+          : 2530;
+    const direction =
+      s.player.x < x - 130 ? 'Walk right →' : s.player.x > x + 130 ? '← Walk left' : 'You are here';
+    const task = !s.has('constellation')
+      ? `Step 1/3: click or tap star ${linked + 1} (${linked}/5 connected). You do not need to jump.`
+      : !s.has('planets')
+        ? `Step 2/3: turn each planet to its gold dot (${aligned}/3 aligned).`
+        : !s.has('telescope')
+          ? 'Step 3/3: stand beside the telescope and press E.'
+          : 'All three discoveries complete! Walk to the portal and press E.';
+    this.objective(`${task} ${direction}`);
   }
   connectStar(index: number) {
     const s = this.s;
     if (s.has('constellation')) return;
     if (index !== this.constellationStep) {
-      this.constellationStep = 0;
-      this.starLines!.clear();
-      this.constellationStars.forEach((st) => st.setFillStyle(0xffdc9e));
-      bridge.emit('toast', 'Follow the constellation from 1 to 5.');
+      bridge.emit(
+        'toast',
+        `Tap the glowing star ${this.constellationStep + 1} next. Your connected stars are safe.`,
+      );
       return;
     }
     const star = this.constellationStars[index];
@@ -329,9 +433,12 @@ export class Challenges {
       this.starLines!.lineBetween(prev.x, prev.y, star.x, star.y);
     }
     this.constellationStep++;
+    s.progress.tasks.push('constellation-star-' + index);
+    s.persist();
     audio.play(600 + index * 100);
     if (this.constellationStep === 5)
-      s.complete('constellation', 'CONSTELLATION DISCOVERED · A story written in stars.');
+      s.complete('constellation', 'CONSTELLATION COMPLETE · Walk right to the three planets.');
+    this.updateAstronomyGuide();
   }
   creator() {
     const s = this.s;
@@ -575,12 +682,14 @@ export class Challenges {
       if (!s.bow && Math.abs(s.player.x - 320) < 110) {
         hint = 'E · PICK UP THE BOW';
         if (edge) {
-          s.bow = true;
-          s.pose(16, 700);
+          s.equipBow();
+          this.bowPickup?.setVisible(false);
+          this.bowPickupLabel?.setText('BOW EQUIPPED ✓');
           audio.play(500);
-          bridge.emit('toast', 'Hold on the world to draw. Release to shoot.');
+          bridge.emit('toast', 'Bow equipped! Hold LEFT CLICK or F, then release to shoot.');
         }
-      } else if (s.bow) hint = 'HOLD TO DRAW · RELEASE TO SHOOT';
+      } else if (s.bow)
+        hint = 'BOW EQUIPPED · HOLD LEFT CLICK / F\nRELEASE TO SHOOT · W / S TO AIM';
       const n = Array.from({ length: 6 }, (_, i) => s.has('arch-target-' + i)).filter(
         Boolean,
       ).length;
@@ -591,6 +700,26 @@ export class Challenges {
       if (s.player.x > 2250) hint = 'RUNE ORDER · MOON → LEAF → STAR';
     }
     if (s.world === 3) {
+      this.updateAstronomyGuide();
+      this.nextStarRing!.setVisible(this.constellationStep < 5);
+      if (this.constellationStep < 5) {
+        const next = this.constellationStars[this.constellationStep];
+        this.nextStarRing!.setPosition(next.x, next.y).setScale(
+          1 + 0.12 * Math.sin(s.worldTime * 0.005),
+        );
+      }
+      if (s.player.x < 1050)
+        hint = s.has('constellation')
+          ? 'STARS COMPLETE ✓ · WALK RIGHT →'
+          : `CLICK / TAP THE GLOWING STAR ${this.constellationStep + 1}\nOR PRESS ITS NUMBER KEY · NO JUMP NEEDED`;
+      if (Math.abs(s.player.x - 1520) < 240) {
+        const next = this.planetAngles.findIndex((a) => a !== 0);
+        hint =
+          next < 0
+            ? 'PLANETS COMPLETE ✓ · WALK RIGHT →'
+            : `TAP TURN ${next + 1} OR PRESS E\nMove the planet to the gold dot on the RIGHT`;
+        if (edge && next >= 0) this.rotatePlanet(next);
+      }
       this.planetGraphics!.clear();
       for (let i = 0; i < 3; i++) {
         const cx = 1400 + i * 120,
@@ -600,6 +729,8 @@ export class Challenges {
         this.planetGraphics!.strokeCircle(cx, cy, 45);
         this.planetGraphics!.fillStyle(0xffd794);
         this.planetGraphics!.fillCircle(cx + 45, cy, 5);
+        this.planetGraphics!.lineStyle(2, this.planetAngles[i] === 0 ? 0x8ee9dd : 0xffd794, 0.9);
+        this.planetGraphics!.strokeCircle(cx + 45, cy, 23);
         this.planets[i].setPosition(cx + Math.cos(angle) * 45, cy + Math.sin(angle) * 45);
       }
       if (Math.abs(s.player.x - 2210) < 140) {
@@ -659,6 +790,16 @@ export class Challenges {
       hint = open
         ? 'E · ENTER ' + worlds[s.world + 1].name
         : 'PORTAL SEALED · COMPLETE THIS WORLD’S CHALLENGES';
+      if (s.world === 3 && !open)
+        hint =
+          'PORTAL SEALED · Still needed:\n' +
+          [
+            !s.has('constellation') && '5 connected stars',
+            !s.has('planets') && '3 aligned planets',
+            !s.has('telescope') && 'Telescope discovery',
+          ]
+            .filter(Boolean)
+            .join(' · ');
       if (edge && open) s.go(s.world + 1);
     }
     return hint;
@@ -676,6 +817,7 @@ export class Challenges {
     );
   }
   destroy() {
+    if (this.astronomyKeyHandler) this.s.input.keyboard?.off('keydown', this.astronomyKeyHandler);
     this.lockMovement = false;
   }
 }

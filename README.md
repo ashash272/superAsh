@@ -39,7 +39,7 @@ The intended first-play pacing is exploratory; a 10–15 minute duration has not
 - Space/Up: jump. Hold for height; release early for a short hop.
 - E: interact, swing, launch, or time a yoga breath.
 - Hold E: flexibility challenge.
-- Hold on the game world and release: draw and shoot the bow. Dotted trajectory previews gravity.
+- Hold left click or touch on the game world, then release: draw and shoot the bow. Dotted trajectory previews gravity. Alternatively, W/S adjusts aim; hold F to draw and release F to fire. The equipped bow remains visible while idle and moving, and pickup is saved.
 - Click/tap stars and planets: Observatory puzzles.
 - Enter: start. Escape: pause.
 
@@ -100,3 +100,14 @@ The development-only `window.__ashify` handle enables browser inspection and is 
 ## Remaining external content / polish
 
 Real project media and the Instagram URL are intentionally unfilled. Additional animation cleanup, richer foreground props, physical-device performance testing, accessibility testing with real users and measured playthrough pacing remain sensible release-polish work. The connected gameplay, challenges, seven portals and ending are implemented; the gallery honestly remains empty until real projects are added.
+
+## Publish to GitHub Pages
+
+The repository is `ashash272/superAsh`. In GitHub, choose **Settings → Pages → Source → GitHub Actions**. Commit and push the prepared source and `.github/workflows/deploy-pages.yml` to `main`. The **Deploy ASHIFY to GitHub Pages** workflow builds the game and publishes only `dist`.
+
+The public address after a successful deployment is https://ashash272.github.io/superAsh/ . Check the repository Actions tab for deployment status. No custom domain is required.
+
+`npm run build:pages` sets Vite's base to `/superAsh/`. Public artwork and configured project media resolve against that base. Normal `npm run dev` and `npm run build` continue using `/`. To test the Pages build locally, run `npm run build:pages`, then `npm run preview:pages`, and open `/superAsh/` on the printed local address.
+
+The workflow and path fixes are prepared locally; creating them does not itself push or publish the project.
+
