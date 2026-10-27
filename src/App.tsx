@@ -22,12 +22,13 @@ type Overlay =
   | 'design'
   | 'gallery'
   | 'map'
-  | 'telescope'
   | 'final'
   | null;
 export default function App() {
   const host = useRef<HTMLDivElement>(null),
     game = useRef<Phaser.Game | null>(null);
+  const [miniActive, setMiniActive] = useState(false);
+  const [hobbyName, setHobbyName] = useState('');
   const [ready, setReady] = useState(false),
     [started, setStarted] = useState(false),
     [overlay, setOverlay] = useState<Overlay>('menu'),
@@ -60,10 +61,15 @@ export default function App() {
   useEffect(() => {
     const listeners: { [key: string]: (...args: any[]) => void } = {
       ready: () => setReady(true),
+      'hobby-active': setMiniActive,
+      'hobby-name': setHobbyName,
       progress: setProgress,
       health: setHealth,
       location: setLocation,
-      world: (value: number) => {setWorld(value); setToast('');},
+      world: (value: number) => {
+        setWorld(value);
+        setToast('');
+      },
       objective: setObjective,
       equipment: setBowEquipped,
       boss: setBoss,
@@ -207,7 +213,16 @@ export default function App() {
         </a>
         <span className="edition">GAME DEVELOPER · INTERACTIVE PORTFOLIO</span>
         <nav>
-          <button className="work-shortcut" onClick={() => {setStarted(true); setOverlay(null); bridge.emit('travel', 2);}}>View my work ↗</button>
+          <button
+            className="work-shortcut"
+            onClick={() => {
+              setStarted(true);
+              setOverlay(null);
+              bridge.emit('travel', 1);
+            }}
+          >
+            View my work ↗
+          </button>
           <button onClick={() => setOverlay('map')} aria-label="World map">
             ⌖
           </button>
@@ -232,10 +247,32 @@ export default function App() {
       <section className="viewport" aria-label="ASHIFY platform adventure">
         <div className="game" ref={host} />
         <div className="vignette" />
-        {started && (
+        {started && world === 0 && !overlay && (
+          <div className="hobby-navigation" aria-label="Hobby spaces">
+            {['Tennis', 'Padel', 'Yoga', 'Archery'].map((name, i) => (
+              <button
+                key={name}
+                aria-pressed={miniActive && hobbyName === name}
+                onClick={() => bridge.emit('choose-hobby', i)}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        )}
+        {miniActive && !overlay && (
+          <div className="activity-guide">
+            <div>
+              <small>UNDER THE STARS · {hobbyName.toUpperCase()}</small>
+              <p>{objective}</p>
+            </div>
+            <button onClick={() => bridge.emit('leave-hobby')}>Leave activity · Q</button>
+          </div>
+        )}
+        {started && !miniActive && (
           <div className="hud">
             <div>
-              <small>{String(world + 1).padStart(2, '0')} / 03 · EXPLORE AT YOUR PACE</small>
+              <small>{String(world + 1).padStart(2, '0')} / 02 · EXPLORE AT YOUR PACE</small>
               <strong>{location}</strong>
               <p className="objective">{objective}</p>
               {bowEquipped && (
@@ -244,7 +281,6 @@ export default function App() {
                 </p>
               )}
             </div>
-
           </div>
         )}
         {overlay === 'menu' && (
@@ -300,15 +336,25 @@ export default function App() {
                   <small>YOUR POCKET FIELD GUIDE</small>
                   <h2>Follow your curiosity.</h2>
                   <p>
-                    Meet Ash through a few optional hobbies, visit the observatory, and explore her creative work. All three areas are open from the start.
+                    Meet Ash through a few optional hobbies, share her love of astronomy, and
+                    explore her creative work. Both areas are open from the start.
                   </p>
                   <div className="controls-list">
-                    <span><kbd>A</kbd> <kbd>D</kbd> / ← →</span><b>Walk</b>
-                    <span><kbd>E</kbd> / tap a station</span><b>Try an activity or open a portal</b>
-                    <span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span><b>Connect the observatory stars</b>
-                    <span>View my work</span><b>Go straight to the portfolio</b>
+                    <span>
+                      <kbd>A</kbd> <kbd>D</kbd> / ← →
+                    </span>
+                    <b>Walk</b>
+                    <span>
+                      <kbd>E</kbd> / tap a station
+                    </span>
+                    <b>Try an activity or open a portal</b>
+                    <span>View my work</span>
+                    <b>Go straight to the portfolio</b>
                   </div>
-                  <p className="muted">No obstacles, timers, or required tasks. Explore at your own pace. Touch controls are at the bottom.</p>
+                  <p className="muted">
+                    Short, easy hobby games with no lives to lose. Follow each game’s instructions,
+                    or close it anytime. Touch controls are at the bottom.
+                  </p>
                   <button className="primary" onClick={started ? close : start}>
                     LET’S EXPLORE ↗
                   </button>
@@ -504,26 +550,6 @@ export default function App() {
                   </p>
                 </>
               )}
-              {overlay === 'telescope' && (
-                <>
-                  <small>THROUGH THE LOOKING GLASS</small>
-                  <div className="space-view">
-                    <span className="planet" />
-                    <i>✦</i>
-                    <i>✧</i>
-                    <i>✦</i>
-                  </div>
-                  <h2>Curiosity has no limits.</h2>
-                  <p>
-                    I’ve attended astronomy conferences, but the best part is still looking up and
-                    wondering what else is out there.
-                  </p>
-                  <p className="gold">COSMIC DISCOVERY · A UNIVERSE OF POSSIBILITIES</p>
-                  <button className="primary" onClick={close}>
-                    BACK TO THE OBSERVATORY ↗
-                  </button>
-                </>
-              )}
               {overlay === 'gallery' && (
                 <>
                   <small>THE CREATOR’S ARCHIVE</small>
@@ -637,14 +663,22 @@ export default function App() {
                 onPointerCancel={() => (touch[key] = false)}
                 onLostPointerCapture={() => (touch[key] = false)}
               >
-                {['←', '→', '↑', 'E'][i]}
+                {i === 3 && miniActive
+                  ? hobbyName === 'Archery'
+                    ? 'DRAW'
+                    : hobbyName === 'Tennis' || hobbyName === 'Padel'
+                      ? 'HIT'
+                      : 'HOLD'
+                  : ['←', '→', '↑', 'E'][i]}
               </button>
             ))}
           </div>
         )}
         <div className="bottom-note">
-          {!started ? '✦  PRESS START TO KNOW ASH' : 'A / D  WALK     E  INTERACT     OR CLICK A STATION'}
-          <span>THREE AREAS · ONE CREATIVE MIND</span>
+          {!started
+            ? '✦  PRESS START TO KNOW ASH'
+            : 'A / D  WALK     E  INTERACT     OR CLICK A STATION'}
+          <span>TWO AREAS · ONE CREATIVE MIND</span>
         </div>
       </section>
       <footer>

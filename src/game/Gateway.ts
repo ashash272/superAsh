@@ -1,6 +1,7 @@
 import { assetUrl } from '../data/assets';
 import Phaser from 'phaser';
 import { createArt } from './art';
+import { createUniverse } from './Universe';
 import { audio, bridge, touch, clearTouch } from './bridge';
 import { readProgress, saveProgress, worlds, categories, type Progress } from '../data/progress';
 import { Challenges } from './systems/Challenges';
@@ -62,6 +63,9 @@ export class Gateway extends Phaser.Scene {
     clearTouch();
   }
   preload() {
+    this.load.image('astronomy-sky', assetUrl('assets/environments/astronomy-sky.png'));
+    this.load.image('ash-yoga', assetUrl('assets/character/ash-yoga.png'));
+    this.load.image('garden-painted', assetUrl('assets/environments/garden-painted.png'));
     this.load.spritesheet('ash-atlas', assetUrl('assets/character/ash-animations.png'), {
       frameWidth: 192,
       frameHeight: 256,
@@ -69,9 +73,15 @@ export class Gateway extends Phaser.Scene {
   }
   create() {
     if (!this.textures.exists('tile')) createArt(this);
+    const yoga = this.textures.get('ash-yoga');
+    if (!yoga.has('0')) {
+      const source = yoga.getSourceImage() as HTMLImageElement;
+      const cell = source.width / 3;
+      for (let i = 0; i < 3; i++) yoga.add(String(i), 0, i * cell, 0, cell, source.height);
+    }
     const width = worlds[this.world].width;
     if (!this.anims.exists('ash-run')) {
-      for (const id of [26, 28]) {
+      for (const id of [19, 26, 28]) {
         const f = this.textures.get('ash-atlas').get(id);
         f.setSize(152, 256, f.cutX + 40, f.cutY);
         f.setTrim(192, 256, 40, 0, 152, 256);
@@ -209,8 +219,10 @@ export class Gateway extends Phaser.Scene {
         this.go(index);
     };
     const replay = () => {
-      const prefixes = [['hobby-'], ['discovery-'], []][this.world];
-      this.progress.tasks = this.progress.tasks.filter(t => !prefixes.some(p => t.startsWith(p)));
+      const prefixes = [['hobby-'], []][this.world];
+      this.progress.tasks = this.progress.tasks.filter(
+        (t) => !prefixes.some((p) => t.startsWith(p)),
+      );
       this.persist();
       this.go(this.world);
     };
@@ -242,12 +254,13 @@ export class Gateway extends Phaser.Scene {
     bridge.emit('world', this.world);
     bridge.emit('ready');
     this.cameras.main.fadeIn(650, 15, 12, 35);
-
   }
   platform(x: number, y: number, w: number) {
-    const tile = this.add.rectangle(x + w / 2, y + 100, w, 200, 0x162b3c).setDepth(2);
-    const rock = this.add.rectangle(x + w / 2, y + 3, w, 6, worlds[this.world].color, 0.65).setDepth(3);
-    this.add.rectangle(x + w / 2, y + 16, w, 22, 0xffffff, 0.035).setDepth(3);
+    const tile = this.add.rectangle(x + w / 2, y + 100, w, 200, 0x162b3c, 0).setDepth(2);
+    const rock = this.add
+      .rectangle(x + w / 2, y + 3, w, 6, worlds[this.world].color, 0)
+      .setDepth(3);
+    this.add.rectangle(x + w / 2, y + 16, w, 22, 0xffffff, 0).setDepth(3);
     const p = this.add.rectangle(x + w / 2, y + 8, w, 16, 0, 0);
     this.physics.add.existing(p, true);
     this.platforms.add(p);
@@ -256,43 +269,7 @@ export class Gateway extends Phaser.Scene {
     return p;
   }
   background() {
-    const width = worlds[this.world].width;
-    const key = 'smooth-sky-' + this.world;
-    if (!this.textures.exists(key)) {
-      const texture = this.textures.createCanvas(key, 1920, 1000)!;
-      const ctx = texture.context;
-      const sky = ctx.createLinearGradient(0, 0, 0, 1000);
-      const colors = [['#132b43', '#34586c', '#8ca7a0'], ['#0c1735', '#253768', '#6c6394'], ['#191831', '#40345e', '#8b7290']][this.world];
-      colors.forEach((c, i) => sky.addColorStop(i / 2, c));
-      ctx.fillStyle = sky; ctx.fillRect(0, 0, 1920, 1000);
-      const glow = ctx.createRadialGradient(1300, 300, 0, 1300, 300, 650);
-      glow.addColorStop(0, '#c9baff44'); glow.addColorStop(1, '#c9baff00');
-      ctx.fillStyle = glow; ctx.fillRect(0, 0, 1920, 1000);
-      for (let layer = 0; layer < 3; layer++) {
-        ctx.beginPath(); ctx.moveTo(0, 720 + layer * 60);
-        ctx.bezierCurveTo(400, 420 + layer * 90, 700, 900, 1100, 650 + layer * 50);
-        ctx.bezierCurveTo(1500, 400 + layer * 100, 1600, 760, 1920, 580 + layer * 90);
-        ctx.lineTo(1920, 1000); ctx.lineTo(0, 1000); ctx.closePath();
-        ctx.fillStyle = ['#20354855', '#20354888', '#14283fbb'][layer]; ctx.fill();
-      }
-      texture.refresh();
-    }
-    const bg = this.add.image(0, 0, key).setOrigin(0).setScrollFactor(0);
-    const resize = () => bg.setDisplaySize(Math.max(this.scale.width, 900), 900);
-    resize(); this.scale.on('resize', resize);
-    this.events.once('shutdown', () => this.scale.off('resize', resize));
-    const moon = this.add.circle(850, 220, this.world === 1 ? 65 : 36, 0xe8e4ff, 0.8).setScrollFactor(0.12);
-    this.add.circle(850, 220, 95, 0xd7c5ff, 0.035).setScrollFactor(0.12);
-    this.tweens.add({targets: moon, y: 208, duration: 6000, yoyo: true, repeat: -1});
-    const rand = new Phaser.Math.RandomDataGenerator(['smooth-' + this.world]);
-    for (let i = 0; i < 44; i++) {
-      const dot = this.add.circle(rand.between(0, width), rand.between(100, 590), i % 4 ? 1.5 : 3, 0xe4e5ff, 0.5).setScrollFactor(0.3);
-      this.tweens.add({targets: dot, y: dot.y - 35, alpha: 0.12, duration: rand.between(2500, 6000), yoyo: true, repeat: -1});
-    }
-    for (let i = 0; i < 4; i++) {
-      const mist = this.add.ellipse(i * 650, 370 + i * 45, 600, 100, worlds[this.world].color, 0.035).setScrollFactor(0.15);
-      this.tweens.add({targets: mist, x: mist.x + 180, duration: 14000 + i * 2000, yoyo: true, repeat: -1});
-    }
+    createUniverse(this, worlds[this.world].width);
   }
   label(x: number, y: number, text: string, size = 13, color = '#e3d3ed') {
     return this.add
@@ -332,20 +309,47 @@ export class Gateway extends Phaser.Scene {
   }
   portal(x: number, y: number, title: string, color = worlds[this.world].color) {
     const c = this.add.container(x, y).setDepth(3);
-    for (let i = 7; i > 0; i--) c.add(this.add.ellipse(0, 0, 85 + i * 12, 140 + i * 10, color, 0.025));
+    for (let i = 7; i > 0; i--)
+      c.add(this.add.ellipse(0, 0, 85 + i * 12, 140 + i * 10, color, 0.025));
     c.add(this.add.ellipse(0, 0, 90, 145, 0x151a38, 0.9).setStrokeStyle(3, color));
     for (let i = 0; i < 3; i++) {
-      const ring = this.add.ellipse(0, 0, 76 - i * 15, 128 - i * 20).setStrokeStyle(1.5, color, 0.7 - i * 0.15);
+      const ring = this.add
+        .ellipse(0, 0, 76 - i * 15, 128 - i * 20)
+        .setStrokeStyle(1.5, color, 0.7 - i * 0.15);
       c.add(ring);
-      this.tweens.add({targets: ring, scaleX: 0.35, alpha: 0.2, duration: 1800 + i * 500, yoyo: true, repeat: -1});
+      this.tweens.add({
+        targets: ring,
+        scaleX: 0.35,
+        alpha: 0.2,
+        duration: 1800 + i * 500,
+        yoyo: true,
+        repeat: -1,
+      });
     }
     for (let i = 0; i < 10; i++) {
-      const dot = this.add.circle(0, 0, 2, color); c.add(dot);
-      this.tweens.addCounter({from: i * Math.PI / 5, to: i * Math.PI / 5 + Math.PI * 2, duration: 4500, repeat: -1,
-        onUpdate: tween => {const a = tween.getValue() ?? 0; dot.setPosition(Math.cos(a) * 54, Math.sin(a) * 83);}});
+      const dot = this.add.circle(0, 0, 2, color);
+      c.add(dot);
+      this.tweens.addCounter({
+        from: (i * Math.PI) / 5,
+        to: (i * Math.PI) / 5 + Math.PI * 2,
+        duration: 4500,
+        repeat: -1,
+        onUpdate: (tween) => {
+          const a = tween.getValue() ?? 0;
+          dot.setPosition(Math.cos(a) * 54, Math.sin(a) * 83);
+        },
+      });
     }
-    const pool = this.add.ellipse(0, 78, 140, 18, color, 0.16); c.add(pool);
-    this.tweens.add({targets: pool, scaleX: 1.18, alpha: 0.3, duration: 1700, yoyo: true, repeat: -1});
+    const pool = this.add.ellipse(0, 78, 140, 18, color, 0.16);
+    c.add(pool);
+    this.tweens.add({
+      targets: pool,
+      scaleX: 1.18,
+      alpha: 0.3,
+      duration: 1700,
+      yoyo: true,
+      repeat: -1,
+    });
     this.label(x, y - 112, title, 18, '#ffffff');
     return c;
   }
@@ -473,6 +477,7 @@ export class Gateway extends Phaser.Scene {
     const dir =
       Number(this.keys.D.isDown || this.keys.RIGHT.isDown || touch.right) -
       Number(this.keys.A.isDown || this.keys.LEFT.isDown || touch.left);
+    if (dir !== 0 && !this.logic.lockMovement) this.player.setFlipX(dir < 0);
     if (this.bow && !this.drawPointer) {
       if (dir < 0 && Math.cos(this.aimAngle) > 0) this.aimAngle = -Math.PI - this.aimAngle;
       if (dir > 0 && Math.cos(this.aimAngle) < 0) this.aimAngle = -Math.PI - this.aimAngle;
@@ -505,6 +510,10 @@ export class Gateway extends Phaser.Scene {
       time < this.invulnerableUntil ? (Math.floor(time / 100) % 2 ? 0.35 : 1) : 1,
     );
     let hint = this.logic.update(delta, edge, interact, dir);
+    if (this.logic.mini) {
+      this.prompt.setVisible(false);
+      return;
+    }
     this.prompt
       .setText(hint)
       .setPosition(

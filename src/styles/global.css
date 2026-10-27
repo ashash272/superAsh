@@ -923,32 +923,382 @@ kbd {
 }
 
 /* Clear typography and a calmer, smooth portfolio presentation. */
-body { font-family: 'DM Sans', Arial, sans-serif; }
-button { border-radius: 10px; font-size: 14px; }
-.topbar nav button { font-size: 13px; }
-.topbar .work-shortcut { background: #dfc8fc; color: #211632; font-weight: 700; }
-.edition, footer, .bottom-note { font-size: 11px; letter-spacing: 0.8px; color: #d0c6de; }
-small, .eyebrow { font-size: 12px; letter-spacing: 1.2px; }
-p { font-size: 16px; color: #e0d7eb; }
-.primary { font-size: 14px; border-radius: 10px; box-shadow: 0 5px 24px #e5c59424; }
-h1 { text-shadow: 0 8px 40px #b79be244; }
-.hud { top: 20px; }
-.hud > div:first-child { background: #101a30d9; border: 1px solid #c3cfff26; border-radius: 14px; padding: 14px 18px; max-width: 660px; }
-.hud small { font-size: 11px; }
-.hud strong { font-size: 21px; letter-spacing: 0.7px; }
-.hud .objective { font-size: 14px; line-height: 1.5; color: #eee8f7; margin-bottom: 0; }
-.vignette { background: linear-gradient(#0c11231a, transparent 50%, #0c112333); }
-@media (max-width: 650px) {
-  .topbar { gap: 8px; }
-  .topbar nav { gap: 4px; }
-  .topbar nav button { padding: 9px 7px; font-size: 11px; }
-  .topbar nav button:nth-child(3) { display: none; }
-  .hud { left: 10px; right: 10px; top: 10px; }
-  .hud > div:first-child { padding: 10px 12px; }
-  .hud strong { font-size: 17px; }
-  .hud .objective { font-size: 12px; }
-  .bottom-note { font-size: 10px; }
+body {
+  font-family: 'DM Sans', Arial, sans-serif;
 }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+button {
+  border-radius: 10px;
+  font-size: 14px;
+}
+.topbar nav button {
+  font-size: 13px;
+}
+.topbar .work-shortcut {
+  background: #dfc8fc;
+  color: #211632;
+  font-weight: 700;
+}
+.edition,
+footer,
+.bottom-note {
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  color: #d0c6de;
+}
+small,
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 1.2px;
+}
+p {
+  font-size: 16px;
+  color: #e0d7eb;
+}
+.primary {
+  font-size: 14px;
+  border-radius: 10px;
+  box-shadow: 0 5px 24px #e5c59424;
+}
+h1 {
+  text-shadow: 0 8px 40px #b79be244;
+}
+.hud {
+  top: 20px;
+}
+.hud > div:first-child {
+  background: #101a30d9;
+  border: 1px solid #c3cfff26;
+  border-radius: 14px;
+  padding: 14px 18px;
+  max-width: 660px;
+}
+.hud small {
+  font-size: 11px;
+}
+.hud strong {
+  font-size: 21px;
+  letter-spacing: 0.7px;
+}
+.hud .objective {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #eee8f7;
+  margin-bottom: 0;
+}
+.vignette {
+  background: linear-gradient(#0c11231a, transparent 50%, #0c112333);
+}
+@media (max-width: 650px) {
+  .topbar {
+    gap: 8px;
+  }
+  .topbar nav {
+    gap: 4px;
+  }
+  .topbar nav button {
+    padding: 9px 7px;
+    font-size: 11px;
+  }
+  .topbar nav button:nth-child(3) {
+    display: none;
+  }
+  .hud {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+  }
+  .hud > div:first-child {
+    padding: 10px 12px;
+  }
+  .hud strong {
+    font-size: 17px;
+  }
+  .hud .objective {
+    font-size: 12px;
+  }
+  .bottom-note {
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
-.toast { top: 190px; bottom: auto; font-size: 14px; max-width: calc(100% - 32px); }
+.toast {
+  top: 190px;
+  bottom: auto;
+  font-size: 14px;
+  max-width: calc(100% - 32px);
+}
+.hobby-navigation {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 7px;
+  background: #122631ee;
+  border: 1px solid #accfc444;
+  border-radius: 14px;
+  z-index: 4;
+  max-width: 96%;
+  overflow-x: auto;
+}
+.hobby-navigation button {
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 9px 13px;
+  border: 0;
+}
+.hobby-navigation button[aria-pressed='true'] {
+  background: #d9e8c1;
+  color: #192c30;
+}
+.viewport:has(.hobby-navigation) .hud {
+  top: 85px;
+}
+.activity-guide {
+  position: absolute;
+  top: 85px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.activity-guide > div {
+  background: #102c38ed;
+  border: 1px solid #a8d1c444;
+  border-radius: 12px;
+  padding: 14px 18px;
+  max-width: 650px;
+}
+.activity-guide p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+  font-size: 15px;
+}
+.activity-guide button {
+  pointer-events: auto;
+  background: #153440ee;
+}
+@media (max-width: 650px) {
+  .hobby-navigation {
+    width: 96%;
+    justify-content: flex-start;
+    top: 8px;
+  }
+  .hobby-navigation button {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+  .activity-guide {
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    display: block;
+  }
+  .activity-guide > div {
+    padding: 10px 12px;
+  }
+  .activity-guide p {
+    font-size: 13px;
+  }
+  .activity-guide button {
+    margin-top: 7px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .touch-controls button:last-child {
+    width: 65px;
+    font-size: 16px;
+  }
+}
+.garden-weather {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.garden-weather i {
+  position: absolute;
+  top: -30px;
+  display: block;
+  animation-name: garden-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+.falling-leaf {
+  width: 13px;
+  height: 7px;
+  border-radius: 90% 5% 90% 5%;
+  background: linear-gradient(35deg, #b38761, #f0c68b);
+  box-shadow: 0 0 9px #f5d3a633;
+}
+.falling-leaf:nth-child(3n) {
+  background: linear-gradient(35deg, #509e87, #abd5ae);
+  width: 10px;
+  height: 6px;
+}
+.falling-star {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff0ba;
+  box-shadow: 0 0 7px 2px #ffe5a990;
+}
+@keyframes garden-fall {
+  0% {
+    transform: translate3d(-30px, -20px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(35px, 45vh, 0) rotate(160deg);
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(100px, 100vh, 0) rotate(330deg);
+    opacity: 0;
+  }
+}
+.weather-paused i {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .garden-weather {
+    display: none;
+  }
+}
+.cosmic-motion {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cosmic-planet {
+  position: absolute;
+  border-radius: 50%;
+  animation: planet-drift 18s ease-in-out infinite alternate;
+}
+.planet-blue {
+  width: clamp(75px, 12vw, 170px);
+  height: clamp(75px, 12vw, 170px);
+  right: 12%;
+  top: 22%;
+  background: radial-gradient(
+    circle at 28% 25%,
+    #d2effa 0%,
+    #6faecc 20%,
+    #365b95 45%,
+    #152745 68%,
+    #080e25 88%
+  );
+  box-shadow:
+    inset -15px -14px 24px #020718aa,
+    0 0 40px #86c9ef22;
+  opacity: 0.85;
+}
+.planet-blue::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-linear-gradient(
+    155deg,
+    transparent 0 13px,
+    #b1e4ef22 16px,
+    transparent 21px
+  );
+}
+.planet-ringed {
+  width: 65px;
+  height: 65px;
+  left: 13%;
+  top: 34%;
+  background: radial-gradient(circle at 30% 25%, #ead9bb, #9b7997 48%, #292343 82%);
+  animation-duration: 24s;
+}
+.planet-ringed i {
+  position: absolute;
+  left: -30px;
+  top: 18px;
+  width: 125px;
+  height: 30px;
+  border: 7px solid #d4bca788;
+  border-radius: 50%;
+  transform: rotate(-25deg);
+  box-shadow: 0 0 0 3px #b7a3d833;
+}
+.shooting-star {
+  position: absolute;
+  width: 145px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d3edff);
+  border-radius: 50%;
+  opacity: 0;
+  animation: meteor-flight 10s linear infinite;
+  filter: drop-shadow(0 0 4px #b1d8ff);
+}
+.shooting-star::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff6df;
+  box-shadow: 0 0 9px #d0eaff;
+}
+@keyframes meteor-flight {
+  0%,
+  70% {
+    opacity: 0;
+    transform: translate(-100px, -100px) rotate(32deg);
+  }
+  73% {
+    opacity: 1;
+  }
+  84% {
+    opacity: 0;
+    transform: translate(430px, 230px) rotate(32deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(430px, 230px) rotate(32deg);
+  }
+}
+@keyframes planet-drift {
+  from {
+    transform: translateY(-12px) rotate(-5deg);
+  }
+  to {
+    transform: translateY(15px) rotate(5deg);
+  }
+}
+.cosmic-motion.weather-paused * {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-motion * {
+    animation: none;
+  }
+  .shooting-star {
+    display: none;
+  }
+}

@@ -19,24 +19,26 @@ npm run preview
 
 No public deployment or GitHub push has been performed. Original photos and environment references in `my-assets` remain untouched and are excluded from the public build.
 
-## Three open areas
+## Two open areas
 
-1. **A little about Ash:** tennis, padel, yoga, flexibility, Pilates and archery in one flat room. Each optional interaction takes a moment and introduces a personal interest.
-2. **The Observatory:** connect three stars, then optionally look through the telescope. Keyboard, mouse and touch are supported.
-3. **The Portfolio:** seven immediately accessible discipline portals. No enemies, timers, required completion or boss fight. The final portal introduces Ash.
+1. **A little about Ash:** tennis, padel, yoga and archery in one flat room. Four spacious, connected in-world areas contain a tennis court, glass-walled padel court, yoga deck and archery range. Ash performs racket wind-up/contact/follow-through frames, animated breathing and pose transitions, and bow draw/release animations. Tennis and padel require three visible returns; padel shows the wall approach and rebound. Archery uses gravity, a trajectory preview and three successive targets. The movement activities use distinct poses with short holds. No hobby opens a modal timing panel.
+2. **The Portfolio:** seven immediately accessible discipline portals. No enemies, timers, required completion or boss fight. The final portal introduces Ash.
 
-The header’s **View my work** button takes visitors directly to the portfolio. All three areas are available in the map from the beginning. Actual project arrays are still empty and explicitly marked as upcoming; add real media using the schema below.
+The header’s **View my work** button takes visitors directly to the portfolio. Both areas are available in the map from the beginning. Actual project arrays are still empty and explicitly marked as upcoming; add real media using the schema below.
 
 ## Controls
 
 - A/D or Left/Right: walk along continuous, obstacle-free ground.
-- E near a station, or click/tap it: interact.
-- 1, 2, 3: connect observatory stars. E also connects the next star near the station.
+- E near a station, or choose a hobby in the garden navigation: play in that space.
+- Tennis/padel: E or tap to swing as the approaching ball glows. A/D adjusts stance.
+- Yoga: hold E or touch to breathe into the pose.
+- Archery: hold E/touch to draw, release to shoot. W/S adjusts aim; touch the target to aim.
+- Q or Leave activity: return to exploration immediately.
 - Enter: start. Escape: pause. On-screen buttons support touch.
 
 ## Visual direction
 
-Smooth canvas gradients and curved landscape layers replace pixel environment images. Animated mist, stars and moon drift create depth. Portals use luminous ellipses, animated inner rings and orbiting light particles. Text uses larger antialiased sans-serif labels. Original reference images remain untouched.
+The entire experience uses a continuous space environment. A seamless nebula panorama follows camera travel slowly, stars move at two depth speeds, and world-positioned planets pass by as Ash explores. Planets rotate, rings tilt, moons orbit and shooting stars cross the environment. The portfolio shares the same layered space rendering. Portals use luminous ellipses, animated inner rings and orbiting light particles. Text uses larger antialiased sans-serif labels. Original reference images remain untouched.
 
 ## Approved character and art
 
@@ -56,7 +58,7 @@ World backgrounds and character art were generated for this project. Equipment, 
 - `src/data/progress.ts`: world/category configuration, project schema, social link and validated local progress.
 - `tests/game.spec.ts`: browser gameplay checks.
 
-Progress uses `ashify-v3` in localStorage. Older saves retain valid explored disciplines and personal discoveries, and restart in the new first area. Unavailable storage falls back to session play. Private reference folders are ignored by Git.
+Progress uses `ashify-v4` in localStorage. Older saves retain valid explored disciplines and personal discoveries, and restart in the new first area. Unavailable storage falls back to session play. Private reference folders are ignored by Git.
 
 ## Add real project media later
 
@@ -104,3 +106,7 @@ The public address after a successful deployment is https://ashash272.github.io/
 
 The workflow and path fixes are prepared locally; creating them does not itself push or publish the project.
 
+
+Yoga uses a dedicated three-cell padded sheet (`ash-yoga.png`) and one visible pose at a time. Walking left mirrors Ash’s run, jump and idle facing. Screen-space falling leaves/stars and stronger pulsing pavilion lights animate every garden view.
+
+Old v3 saves in the removed Observatory return to the hobby stage; old portfolio saves move to the new portfolio index. Explored disciplines and hobby progress are retained.

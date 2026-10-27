@@ -22,9 +22,18 @@ export const categories = [
 }));
 export const social = { instagram: '' };
 export const worlds = [
-  { name: 'A LITTLE ABOUT ASH', subtitle: 'Movement, focus, and a little play.', width: 2100, color: 0x8ee6d2 },
-  { name: 'THE OBSERVATORY', subtitle: 'Always curious about what comes next.', width: 1500, color: 0x99c9ff },
-  { name: 'THE PORTFOLIO', subtitle: 'I turn ideas into playable worlds.', width: 2850, color: 0xd394ff },
+  {
+    name: 'A LITTLE ABOUT ASH',
+    subtitle: 'A love of movement. A mind among the stars.',
+    width: 4500,
+    color: 0x8ee6d2,
+  },
+  {
+    name: 'THE PORTFOLIO',
+    subtitle: 'I turn ideas into playable worlds.',
+    width: 2850,
+    color: 0xd394ff,
+  },
 ];
 export type Progress = {
   stars: number[];
@@ -43,7 +52,7 @@ export const emptyProgress = (): Progress => ({
   tasks: [],
   secrets: [],
   world: 0,
-  unlockedWorld: 2,
+  unlockedWorld: 1,
   finished: false,
 });
 const strings = (a: unknown) =>
@@ -51,12 +60,13 @@ const strings = (a: unknown) =>
 export function readProgress(): Progress {
   try {
     const p = JSON.parse(
-      localStorage.getItem('ashify-v3') || localStorage.getItem('ashify-v2') || localStorage.getItem('ashify-v1') || 'null',
+      localStorage.getItem('ashify-v4') ||
+        localStorage.getItem('ashify-v3') ||
+        localStorage.getItem('ashify-v2') ||
+        localStorage.getItem('ashify-v1') ||
+        'null',
     );
     if (!p || typeof p !== 'object') return emptyProgress();
-    const unlockedWorld = Number.isInteger(p.unlockedWorld)
-      ? Math.max(0, Math.min(2, p.unlockedWorld))
-      : 0;
     return {
       stars: Array.isArray(p.stars)
         ? [
@@ -71,8 +81,14 @@ export function readProgress(): Progress {
       skills: strings(p.skills).filter((s) => categories.some((c) => c.id === s)),
       tasks: strings(p.tasks),
       secrets: strings(p.secrets),
-      world: localStorage.getItem('ashify-v3') && Number.isInteger(p.world) ? Math.max(0, Math.min(2, p.world)) : 0,
-      unlockedWorld: 2,
+      world: Number.isInteger(p.world)
+        ? localStorage.getItem('ashify-v4')
+          ? Math.max(0, Math.min(1, p.world))
+          : p.world === 2
+            ? 1
+            : 0
+        : 0,
+      unlockedWorld: 1,
       finished: p.finished === true,
     };
   } catch {
@@ -81,7 +97,7 @@ export function readProgress(): Progress {
 }
 export function saveProgress(p: Progress) {
   try {
-    localStorage.setItem('ashify-v3', JSON.stringify(p));
+    localStorage.setItem('ashify-v4', JSON.stringify(p));
   } catch {
     /* Saving unavailable: keep session playable. */
   }
