@@ -257,18 +257,23 @@ test.describe('portrait polish', () => {
     await page.goto('/');
     await expect(page.getByRole('button', { name: 'START ADVENTURE' })).toBeEnabled();
     await page.screenshot({ path: 'design/portrait-start.png' });
-    const pixels = await page
-      .locator('canvas')
-      .evaluate((c: HTMLCanvasElement) => ({
-        width: c.width,
-        css: c.getBoundingClientRect().width,
-      }));
+    const pixels = await page.locator('canvas').evaluate((c: HTMLCanvasElement) => ({
+      width: c.width,
+      css: c.getBoundingClientRect().width,
+    }));
     expect(pixels.width / pixels.css).toBeGreaterThanOrEqual(1.95);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       390,
     );
     await expect(page.getByRole('button', { name: /My disciplines/ })).toHaveCount(0);
     await page.getByRole('button', { name: 'START ADVENTURE' }).tap();
+    await expect(page.locator('.hud')).not.toContainText('I love astronomy');
+    await page.waitForTimeout(900);
+    const playerY = () =>
+      page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').player.y);
+    const groundedY = await playerY();
+    await page.getByRole('button', { name: 'jump', exact: true }).tap();
+    await expect.poll(playerY, { intervals: [50] }).toBeLessThan(groundedY - 15);
     await page.getByRole('button', { name: 'Yoga', exact: true }).tap();
     const guide = await page.locator('.activity-guide').boundingBox();
     expect(guide!.height).toBeLessThan(75);
@@ -283,6 +288,10 @@ test.describe('portrait polish', () => {
       .dispatchEvent('pointerup', { pointerId: 1 });
     await page.getByRole('button', { name: 'Leave activity' }).tap();
     await page.getByRole('button', { name: 'Pause game' }).tap();
+    await page.screenshot({ path: 'design/portrait-pause.png' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.screenshot({ path: 'design/desktop-pause.png' });
+    await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByRole('button', { name: 'Character design', exact: true })).toHaveCount(
       0,
     );
@@ -296,24 +305,26 @@ test.describe('portrait polish', () => {
     });
     await page.getByRole('button', { name: 'interact', exact: true }).tap();
     await expect(page.locator('.talking-portrait')).toBeVisible();
-    const frame = await page
-      .locator('.talking-portrait')
-      .evaluate((el) => getComputedStyle(el).backgroundPosition);
-    await expect
-      .poll(
-        () =>
-          page
-            .locator('.talking-portrait')
-            .evaluate((el) => getComputedStyle(el).backgroundPosition),
-        { intervals: [100] },
-      )
-      .not.toBe(frame);
+    await expect(page.locator('.talking-portrait')).toHaveClass(/is-waving/);
+    await page.screenshot({ path: 'design/ash-fullbody-wave.png' });
+    await expect(page.locator('.talking-body')).toHaveCSS('transform', 'none');
+    await expect(page.locator('.talking-body')).toHaveCSS('background-position', '0px 0px');
+    await expect(page.locator('.talking-mouth')).toHaveCount(0);
+    await expect(page.locator('.talking-portrait')).toHaveCSS('transform', 'none');
+    await expect(page.locator('.talking-body')).toHaveCSS('transform', 'none');
     await expect(page.locator('.greeting')).toContainText('I’m a game developer.', {
       timeout: 8000,
     });
+    await expect(page.locator('.ash-wink')).toHaveClass(/active/, { timeout: 10000 });
+    await expect(page.locator('.talking-portrait')).toHaveClass(/is-victory/);
+    await expect(page.locator('.wink-stars span')).toHaveCount(7);
+    await page.screenshot({ path: 'design/ash-wink-stars.png' });
+    await expect(page.locator('.ash-wink')).not.toHaveClass(/active/);
     await expect(page.locator('.final-panel')).not.toContainText('cosmic dreamer');
     await expect(page.locator('.final-panel')).not.toContainText('adventure lover');
     await page.screenshot({ path: 'design/portrait-meet-ash.png' });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.screenshot({ path: 'design/desktop-meet-ash.png' });
     expect(errors).toEqual([]);
   });
 });

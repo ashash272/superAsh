@@ -1552,10 +1552,11 @@ h1 {
     font-weight: 700;
   }
   .touch-controls button[aria-label='jump'] {
-    display: none;
+    display: block;
+    margin-left: auto;
   }
   .touch-controls button[aria-label='interact'] {
-    margin-left: auto;
+    margin-left: 0;
   }
   .hobby-status {
     bottom: 82px;
@@ -1660,3 +1661,211 @@ h1 {
     height: 155px;
   }
 }
+
+/* Pause actions and settings have separate, consistent rows. */
+.pause-panel {
+  width: min(560px, 100%);
+  padding: 36px 28px 24px;
+}
+.pause-panel h2 {
+  margin: 16px 0 24px;
+}
+.pause-panel > .primary {
+  width: 100%;
+  min-height: 50px;
+}
+.pause-panel .menu-grid {
+  margin: 18px 0;
+  gap: 10px;
+}
+.pause-panel .menu-grid button {
+  min-height: 46px;
+}
+.pause-settings {
+  display: grid;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid #c9b4ec26;
+  border-bottom: 1px solid #c9b4ec26;
+}
+.pause-settings .display-setting,
+.pause-settings .volume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  font-size: 13px;
+}
+.pause-settings button {
+  font-size: 12px;
+  padding: 10px 14px;
+}
+.pause-settings input {
+  width: 48%;
+  min-height: 30px;
+  margin: 0;
+}
+.pause-panel > .text-button {
+  margin-top: 14px;
+  min-height: 40px;
+}
+@media (max-width: 650px) {
+  .pause-panel {
+    padding: 32px 18px 18px;
+  }
+  .pause-panel h2 {
+    font-size: 25px;
+  }
+  .pause-panel .menu-grid button {
+    padding: 10px 6px;
+  }
+}
+
+/* Keep final actions balanced even with an odd number of links. */
+.final-panel .menu-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.final-panel .menu-grid > .primary {
+  grid-column: 1 / -1;
+}
+.final-panel .menu-grid > :last-child:nth-child(even) {
+  grid-column: 1 / -1;
+}
+.final-panel .menu-grid > * {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+.final-panel .replay-greeting {
+  margin: 12px 0 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+@media (max-width: 420px) {
+  .final-panel .menu-grid > * {
+    font-size: 10px;
+    padding: 10px 7px;
+    letter-spacing: 0.3px;
+  }
+}
+
+/* One portrait, one registered lip patch: no sprite swaps or head/body movement. */
+.talking-portrait,
+.talking-portrait.is-talking {
+  position: relative;
+  background-size: 0 0;
+  animation: none;
+  transform: none;
+}
+.talking-body,
+.talking-mouth-mask,
+.talking-mouth {
+  position: absolute;
+  inset: 0;
+  background-image: inherit;
+}
+.talking-body,
+.talking-mouth {
+  background-size: 100% 100%;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+.talking-mouth-mask {
+  background-size: 0 0;
+  mask-image: radial-gradient(ellipse 8.5% 4.2% at 40.3% 50.6%, #000 75%, transparent 100%);
+}
+.talking-mouth {
+  transform-origin: 40.3% 50.6%;
+}
+.talking-portrait.is-talking .talking-mouth {
+  animation: ash-lips 740ms ease-in-out infinite;
+}
+@keyframes ash-lips {
+  0%,
+  45%,
+  100% {
+    transform: scaleY(1);
+  }
+  18%,
+  68% {
+    transform: scaleY(1.14);
+  }
+  32%,
+  84% {
+    transform: scaleY(0.9);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .talking-portrait.is-talking .talking-mouth {
+    animation: none;
+  }
+}
+
+.ash-wink {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  opacity: 0;
+  mask-image: radial-gradient(ellipse 6.5% 4% at 35.2% 32.3%, #000 80%, transparent 100%);
+  transition: opacity 90ms ease;
+}
+.ash-wink.active {
+  opacity: 1;
+}
+.wink-stars {
+  position: absolute;
+  left: 35.2%;
+  top: 32.3%;
+  pointer-events: none;
+}
+.wink-stars span {
+  position: absolute;
+  color: #ffe7a0;
+  font-size: 16px;
+  text-shadow: 0 0 8px #ffd070;
+  animation: wink-spark 650ms ease-out both;
+  animation-delay: var(--delay);
+}
+@keyframes wink-spark {
+  from {
+    transform: translate(0, 0) scale(0.15) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.6) rotate(100deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wink-stars {
+    display: none;
+  }
+  .ash-wink {
+    transition: none;
+  }
+}
+
+/* Full-body greeting: fixed torso, articulated waving hand, then victory pose. */
+.final-panel .fullbody-portrait { width: 300px; height: 300px; margin-left: -80px; }
+.fullbody-portrait .talking-body, .fullbody-portrait .greeting-hand, .fullbody-portrait .ash-wink { background-size: 200% 100%; background-repeat: no-repeat; }
+.fullbody-portrait .talking-body { clip-path: polygon(0 0, 46% 0, 46% 23%, 49% 24.5%, 53% 24.5%, 57% 21%, 57% 0, 100% 0, 100% 100%, 0 100%); }
+.greeting-hand { position: absolute; inset: 0; background-image: inherit; background-position: 0 0; clip-path: polygon(46% 10%, 57% 10%, 57% 21%, 53% 25.6%, 49% 25.6%, 46% 23%); transform-origin: 51.5% 25%; }
+.is-waving .greeting-hand { animation: ash-wave 850ms ease-in-out infinite; }
+.is-victory .greeting-hand { background-position: 66.7% 0; }
+.fullbody-portrait .ash-wink { background-position: 66.7% 0; mask-image: radial-gradient(ellipse 2.7% 2% at 67.5% 11.3%, #000 80%, transparent 100%); }
+.fullbody-portrait .wink-stars { left: 67.5%; top: 11.3%; }
+@keyframes ash-wave { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@media (max-height: 740px) { .final-panel .fullbody-portrait { width: 240px; height: 240px; margin-left: -64px; } }
+@media (prefers-reduced-motion: reduce) { .is-waving .greeting-hand { animation: none; } }
+
+
+

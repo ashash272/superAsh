@@ -316,7 +316,7 @@ export default function App() {
         {overlay && overlay !== 'menu' && (
           <div className="scrim">
             <section
-              className={`panel ${overlay === 'showcase' ? 'showcase show-' + showId : ''} ${overlay === 'final' ? 'final-panel' : ''}`}
+              className={`panel ${overlay === 'showcase' ? 'showcase show-' + showId : ''} ${overlay === 'final' ? 'final-panel' : ''} ${overlay === 'pause' ? 'pause-panel' : ''}`}
               style={
                 overlay === 'showcase'
                   ? ({ '--skill-color': category.color } as React.CSSProperties)
@@ -370,9 +370,6 @@ export default function App() {
                   <div className="menu-grid">
                     <button onClick={() => setOverlay('help')}>Controls</button>
                     <button onClick={() => setOverlay('map')}>World map</button>
-                    <button onClick={() => setPortrait(!portrait)}>
-                      {portrait ? 'Landscape mode' : 'Portrait 9:16 mode'}
-                    </button>
                     <button onClick={() => setOverlay('gallery')}>Project gallery</button>
                     <button
                       onClick={() => {
@@ -384,17 +381,25 @@ export default function App() {
                       Replay this area
                     </button>
                   </div>
-                  <label className="volume">
-                    Sound volume{' '}
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      defaultValue={audio.volume}
-                      onChange={(e) => (audio.volume = +e.target.value)}
-                    />
-                  </label>
+                  <div className="pause-settings">
+                    <div className="display-setting">
+                      <span>Display</span>
+                      <button onClick={() => setPortrait(!portrait)}>
+                        {portrait ? 'Landscape mode' : 'Portrait 9:16 mode'}
+                      </button>
+                    </div>
+                    <label className="volume">
+                      Sound volume{' '}
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        defaultValue={audio.volume}
+                        onChange={(e) => (audio.volume = +e.target.value)}
+                      />
+                    </label>
+                  </div>
                   <button
                     className="text-button"
                     onClick={() => {
@@ -604,6 +609,7 @@ export default function App() {
                   e.preventDefault();
                   e.currentTarget.setPointerCapture(e.pointerId);
                   touch[key] = true;
+                  if (key === 'jump') bridge.emit('jump');
                   if (key === 'interact') bridge.emit('interact');
                 }}
                 onPointerUp={() => (touch[key] = false)}

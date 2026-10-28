@@ -35,7 +35,7 @@ export class Challenges {
   }
   hobbies() {
     const s = this.s;
-    bridge.emit('objective', 'I love astronomy. Pick a hobby to play.');
+    bridge.emit('objective', 'Pick a hobby to play.');
     hobbies.forEach((name, i) => {
       const cx = hobbyCenter(i);
       buildHobbySpace(s, name, cx, i);

@@ -120,6 +120,12 @@ export class Gateway extends Phaser.Scene {
     };
     this.input.keyboard!.on('keydown-E', queue);
     bridge.on('interact', queue);
+    // Queue quick touch taps even when down/up both occur between render frames.
+    const queueJump = () => {
+      if (!this.held && !this.logic.lockMovement) this.bufferedAt = this.worldTime;
+    };
+    bridge.on('jump', queueJump);
+    this.events.once('shutdown', () => bridge.off('jump', queueJump));
     this.arrows = this.physics.add.group();
     this.physics.add.collider(this.arrows, this.platforms, (a) => a.destroy());
     this.aim = this.add.graphics().setDepth(13);
