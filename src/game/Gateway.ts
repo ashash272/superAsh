@@ -132,7 +132,7 @@ export class Gateway extends Phaser.Scene {
     this.bowVisual = this.add.graphics().setDepth(12);
     this.prompt = this.add
       .text(0, 0, '', {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'DM Sans, sans-serif',
         fontSize: '16px',
         color: '#fff0d2',
         backgroundColor: '#17132ee8',
@@ -141,6 +141,7 @@ export class Gateway extends Phaser.Scene {
         wordWrap: { width: 300 },
       })
       .setOrigin(0.5, 1)
+      .setResolution(2)
       .setDepth(25);
     this.time.addEvent({
       delay: 6500,
@@ -282,7 +283,7 @@ export class Gateway extends Phaser.Scene {
   label(x: number, y: number, text: string, size = 13, color = '#e3d3ed') {
     return this.add
       .text(x, y, text, {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'DM Sans, sans-serif',
         fontSize: Math.max(16, size) + 'px',
         color,
         align: 'center',
@@ -314,6 +315,22 @@ export class Gateway extends Phaser.Scene {
         ][this.world],
       );
     });
+  }
+  badge(x: number, y: number, title: string, size = 18) {
+    const text = this.label(x, y, title, size, '#f4eaff')
+      .setFontFamily('DM Sans, sans-serif').setFontStyle('500').setPadding(18, 10);
+    const plate = this.add.graphics().setDepth(text.depth - 0.1);
+    const draw = () => {
+      plate.clear().setVisible(text.visible).setAlpha(text.alpha);
+      if (!text.visible) return;
+      const b = text.getBounds();
+      plate.fillStyle(0x211a35, 0.94).fillRoundedRect(b.x, b.y, b.width, b.height, 12);
+      plate.lineStyle(1.2, 0xc8a6ed, 0.55).strokeRoundedRect(b.x, b.y, b.width, b.height, 12);
+    };
+    this.events.on('update', draw);
+    text.once('destroy', () => { this.events.off('update', draw); plate.destroy(); });
+    draw();
+    return text;
   }
   portal(x: number, y: number, title: string, color = worlds[this.world].color) {
     const c = this.add.container(x, y).setDepth(3);
@@ -358,7 +375,17 @@ export class Gateway extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
-    this.label(x, y - 112, title, 18, '#ffffff');
+    const label = this.badge(x, y - 112, title, 18).setName('portal-label');
+    const glow = this.add.ellipse(x, y, 145, 190, color, 0).setDepth(2);
+    const highlight = () => {
+      const near = Math.max(0, 1 - Math.abs(this.player.x - x) / 230);
+      const pulse = 0.5 + 0.5 * Math.sin(this.time.now * 0.004);
+      label.setScale(1 + near * 0.06).setY(y - 112 - near * (4 + pulse * 3));
+      label.setShadow(0, 0, '#e3c6ff', near * (8 + pulse * 8), true, true);
+      glow.setAlpha(near * (0.07 + pulse * 0.06));
+    };
+    this.events.on('update', highlight);
+    label.once('destroy', () => this.events.off('update', highlight));
     return c;
   }
   pose(frame: number, duration = 700) {
@@ -530,8 +557,9 @@ export class Gateway extends Phaser.Scene {
       )
       .setVisible(
         !!hint &&
-          !this.logic.stations.some((st) => Math.abs(st.x - this.player.x) < 110) &&
-          viewWidth(this) > 650,
+          (this.world === 1
+            ? this.logic.stations.some((st) => Math.abs(st.x - this.player.x) < 110) || this.player.x > worlds[this.world].width - 260
+            : !this.logic.stations.some((st) => Math.abs(st.x - this.player.x) < 110) && viewWidth(this) > 650),
       );
     if (this.drawing) {
       this.player.anims.stop();
@@ -590,3 +618,4 @@ export class Gateway extends Phaser.Scene {
     });
   }
 }
+

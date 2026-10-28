@@ -41,9 +41,7 @@ export class Challenges {
       buildHobbySpace(s, name, cx, i);
       const action = () => this.startHobby(i);
       this.stations.push({ x: cx - 275, title: 'Play ' + name, action });
-      s.label(cx - 275, 690, 'E · PLAY ' + name.toUpperCase(), 16, '#fff2d4')
-        .setBackgroundColor('#172e3be8')
-        .setPadding(12, 8)
+      s.badge(cx - 275, 690, 'E · Play ' + name, 16)
         .setData('hobby-prompt', true)
         .setVisible(viewWidth(s) > 650)
         .setInteractive({ useHandCursor: true })
@@ -75,7 +73,7 @@ export class Challenges {
       const x = 280 + i * 340;
       s.portal(x, 570, c.title, Phaser.Display.Color.HexStringToColor(c.color).color);
       const open = () => bridge.emit('showcase', c.id);
-      this.stations.push({ x, title: 'Explore ' + c.title, action: open });
+      this.stations.push({ x, title: 'Open ' + c.title, action: open });
       s.add
         .zone(x, 550, 155, 190)
         .setInteractive({ useHandCursor: true })

@@ -148,9 +148,7 @@ export function buildHobbySpace(s: Gateway, name: string, cx: number, index: num
     yoyo: true,
     repeat: -1,
   });
-  s.label(cx, 318, String(index + 1).padStart(2, '0') + '  /  ' + name.toUpperCase(), 23, '#fff0d5')
-    .setBackgroundColor('#172b37e8')
-    .setPadding(20, 10)
+  s.badge(cx, 318, name, 23)
     .setData('hobby-prompt', true)
     .setVisible(viewWidth(s) > 650);
 }

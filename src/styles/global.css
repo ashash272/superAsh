@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 :root {
   font-family: 'DM Sans', sans-serif;
   color: #eee7fa;
@@ -56,7 +56,7 @@ a {
   gap: 40px;
 }
 .wordmark {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-weight: 700;
   font-size: 26px;
   letter-spacing: -2px;
@@ -124,7 +124,7 @@ a {
 }
 .eyebrow,
 small {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   letter-spacing: 2.5px;
   font-size: 10px;
   color: #bcb0d0;
@@ -140,7 +140,7 @@ small {
   background: #b69ac8;
 }
 h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: clamp(76px, 10vw, 150px);
   letter-spacing: -7px;
   line-height: 0.9;
@@ -176,7 +176,7 @@ p {
   padding: 16px 25px;
   font-size: 11px;
   letter-spacing: 1.4px;
-  font-weight: 800;
+  font-weight: 700;
   border-radius: 3px;
 }
 .primary:hover {
@@ -198,7 +198,7 @@ p {
   margin-left: 16px;
 }
 .press-start {
-  font-family: monospace;
+  font-family: 'DM Sans', sans-serif;
   font-size: 9px;
   letter-spacing: 2px;
   color: #9c8bac;
@@ -231,7 +231,7 @@ p {
   justify-content: space-between;
   padding: 20px 28px;
   background: linear-gradient(transparent, #100e2380);
-  font: 9px monospace;
+  font: 9px 'DM Sans', sans-serif;
   letter-spacing: 1px;
   color: #aca0c0;
   pointer-events: none;
@@ -266,7 +266,7 @@ footer button {
 .hud strong {
   display: block;
   font:
-    13px 'Space Grotesk',
+    13px 'DM Sans',
     sans-serif;
   letter-spacing: 2px;
   margin-top: 8px;
@@ -310,7 +310,7 @@ footer button {
   animation: appear 0.4s ease-out;
 }
 .panel h2 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 32px;
   letter-spacing: -1px;
   margin: 20px 0;
@@ -719,7 +719,7 @@ kbd {
   padding: 12px 18px;
   background: #201327cd;
   border: 1px solid #e793b5;
-  font: 11px monospace;
+  font: 11px 'DM Sans', sans-serif;
   text-align: center;
   pointer-events: none;
 }
@@ -742,7 +742,7 @@ kbd {
   padding: 13px;
 }
 .world-map button > span {
-  font: 20px monospace;
+  font: 20px 'DM Sans', sans-serif;
   color: #d9c496;
 }
 .world-map b {
@@ -869,7 +869,7 @@ kbd {
 }
 .brand-reveal {
   font:
-    700 36px 'Space Grotesk',
+    700 36px 'DM Sans',
     sans-serif;
   letter-spacing: 6px;
   color: #eed2a2;
@@ -924,7 +924,7 @@ kbd {
 
 /* Clear typography and a calmer, smooth portfolio presentation. */
 body {
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 button {
   border-radius: 10px;
@@ -1866,6 +1866,7 @@ h1 {
 @keyframes ash-wave { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
 @media (max-height: 740px) { .final-panel .fullbody-portrait { width: 240px; height: 240px; margin-left: -64px; } }
 @media (prefers-reduced-motion: reduce) { .is-waving .greeting-hand { animation: none; } }
+
 
 
 

@@ -328,3 +328,26 @@ test.describe('portrait polish', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test('portal labels highlight nearby and interaction guide stays visible', async ({ page }) => {
+  await start(page);
+  await page.getByRole('button', { name: 'View my work' }).click();
+  await page.waitForTimeout(800);
+  await page.evaluate(() => {
+    const s = (window as any).__ashify.scene.getScene('Gateway');
+    s.player.setPosition(280, 600);
+  });
+  await expect.poll(() => page.evaluate(() => {
+    const s = (window as any).__ashify.scene.getScene('Gateway');
+    return s.prompt.visible && s.prompt.text.includes('Open 2D Games');
+  })).toBe(true);
+  expect(await page.evaluate(() => {
+    const s = (window as any).__ashify.scene.getScene('Gateway');
+    return s.children.getByName('portal-label').scaleX;
+  })).toBeGreaterThan(1.04);
+  await page.screenshot({path: 'design/portal-labels.png'});
+  await page.setViewportSize({width:390,height:844});
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').prompt.visible)).toBe(true);
+  await page.screenshot({path: 'design/portal-labels-mobile.png'});
+});
