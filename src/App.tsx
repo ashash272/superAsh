@@ -620,7 +620,11 @@ export default function App() {
                 onPointerCancel={() => (touch[key] = false)}
                 onLostPointerCapture={() => (touch[key] = false)}
               >
-                {i === 3 ? <ActionIcon action={miniActive ? hobbyName : nearbyAction} /> : ['←', '→', '↑'][i]}
+                {i === 3 ? (
+                  miniActive && ['Yoga', 'Tennis', 'Padel'].includes(hobbyName)
+                    ? <span className="action-word">{hobbyName === 'Yoga' ? 'HOLD' : 'HIT'}</span>
+                    : <span className="action-content"><ActionIcon action={miniActive ? hobbyName : nearbyAction} />{!miniActive && nearbyAction === 'Portal' && <span className="action-caption">Open</span>}</span>
+                ) : ['←', '→', '↑'][i]}
               </button>
             ))}
           </div>

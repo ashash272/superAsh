@@ -344,7 +344,7 @@ test('portal labels highlight nearby and interaction guide stays visible', async
   expect(await page.evaluate(() => {
     const s = (window as any).__ashify.scene.getScene('Gateway');
     return s.children.getByName('portal-label').scaleX;
-  })).toBeGreaterThan(1.04);
+  })).toBe(1);
   await page.screenshot({path: 'design/portal-labels.png'});
   await page.setViewportSize({width:390,height:844});
   await page.waitForTimeout(500);
@@ -360,7 +360,7 @@ test('action icon follows nearby hobbies and portals', async ({ page }) => {
     await expect(page.locator('.action-icon')).toHaveAttribute('data-action', action);
   }
   await page.getByRole('button',{name:'Yoga',exact:true}).click();
-  await expect(page.locator('.action-icon')).toHaveAttribute('data-action','Yoga');
+  await expect(page.locator('.action-word')).toHaveText('HOLD');
   await page.getByRole('button',{name:'Leave activity'}).click();
   await page.getByRole('button',{name:'View my work'}).click();
   await page.waitForTimeout(800);
@@ -368,3 +368,4 @@ test('action icon follows nearby hobbies and portals', async ({ page }) => {
   await expect(page.locator('.action-icon')).toHaveAttribute('data-action','Portal');
   await page.screenshot({path:'design/context-action-icons.png'});
 });
+

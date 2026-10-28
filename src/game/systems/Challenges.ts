@@ -101,11 +101,11 @@ export class Challenges {
           bridge.emit('overlay', 'final');
         }
       }
-      return s.world < 1 ? 'E · Continue — no tasks required' : 'E · Meet the creator';
+      return s.world < 1 ? 'Continue' : 'Open Meet Ash';
     }
     if (station) {
       if (edge) station.action();
-      return 'E · ' + station.title;
+      return s.world === 1 ? station.title : 'E · ' + station.title;
     }
     return 'Walk right → · Click an activity to try it';
   }

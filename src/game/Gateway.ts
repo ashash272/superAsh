@@ -377,12 +377,20 @@ export class Gateway extends Phaser.Scene {
     });
     const label = this.badge(x, y - 112, title, 18).setName('portal-label');
     const glow = this.add.ellipse(x, y, 145, 190, color, 0).setDepth(2);
+    const labelGlow = this.add.graphics().setDepth(label.depth - 0.2);
+    const bounds = label.getBounds();
+    for (let spread = 12; spread >= 3; spread -= 3) {
+      labelGlow.fillStyle(color, 0.06).fillRoundedRect(bounds.x - spread, bounds.y - spread, bounds.width + spread * 2, bounds.height + spread * 2, 12 + spread);
+    }
+    let proximity = 0;
     const highlight = () => {
       const near = Math.max(0, 1 - Math.abs(this.player.x - x) / 230);
+      proximity += (near - proximity) * (1 - Math.exp(-this.game.loop.delta / 100));
       const pulse = 0.5 + 0.5 * Math.sin(this.time.now * 0.004);
-      label.setScale(1 + near * 0.06).setY(y - 112 - near * (4 + pulse * 3));
-      label.setShadow(0, 0, '#e3c6ff', near * (8 + pulse * 8), true, true);
-      glow.setAlpha(near * (0.07 + pulse * 0.06));
+      // Keep glyphs on fixed pixels: animate the surrounding light, not the text texture.
+      label.setScale(1).setY(y - 112);
+      glow.setAlpha(proximity * (0.07 + pulse * 0.06));
+      labelGlow.setAlpha(proximity * (0.65 + pulse * 0.35));
     };
     this.events.on('update', highlight);
     label.once('destroy', () => this.events.off('update', highlight));
