@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { renderScale, viewWidth } from '../display';
 import type { Gateway } from '../Gateway';
 import { bridge, audio } from '../bridge';
 
@@ -62,7 +63,8 @@ export class HobbyGame {
       .label(cx, 770, '', 20, '#ffffff')
       .setBackgroundColor('#112b38ed')
       .setPadding(16, 10)
-      .setDepth(25);
+      .setDepth(25)
+      .setVisible(false);
     s.children.list.forEach((o) => {
       if (o.getData('hobby-prompt')) (o as Phaser.GameObjects.Text).setVisible(false);
     });
@@ -71,10 +73,13 @@ export class HobbyGame {
     s.cameras.main.stopFollow();
     this.resize = () => {
       const cam = s.cameras.main;
-      cam.setZoom(Math.min(1.15, s.scale.width / 880));
+      cam.setZoom(
+        Math.min(1.15, viewWidth(s) / (name === 'Yoga' ? 480 : name === 'Archery' ? 780 : 880)) *
+          renderScale,
+      );
       // Center the entire activity, including Ash and the receiving end, on small screens.
       cam.useBounds = false;
-      cam.centerOn(cx, 540);
+      cam.centerOn(cx + (name === 'Archery' ? 30 : 0), 540);
     };
     this.resize();
     s.scale.on('resize', this.resize);
@@ -99,17 +104,15 @@ export class HobbyGame {
     bridge.on('leave-hobby', this.exitKey);
     bridge.emit('hobby-active', true);
     bridge.emit('hobby-name', name);
+    bridge.emit('hobby-status', '');
     this.objective();
   }
   objective() {
     const descriptions: Record<string, string> = {
-      Tennis:
-        'Return 3 balls over the net. Press E / tap when the ball glows beside Ash. A / D adjusts your position.',
-      Padel:
-        'Watch the glass-wall bounce, then return 3 balls. Press E / tap when the ball reaches Ash.',
-      Yoga: 'Hold E / touch to breathe into each pose. Release to rest. Follow the expanding breath ring.',
-      Archery:
-        'Hold E / touch to draw, release to shoot. W / S adjusts aim; touch the target to aim. Land 3 arrows.',
+      Tennis: 'Tap HIT when the ball glows. Return 3 balls.',
+      Padel: 'Let it rebound, then tap HIT. Return 3 balls.',
+      Yoga: 'Hold to breathe into each pose. Release to rest.',
+      Archery: 'Hold DRAW, release to shoot. Tap a target to aim.',
     };
     bridge.emit('objective', descriptions[this.name]);
   }
@@ -145,7 +148,8 @@ export class HobbyGame {
     this.finished = true;
     this.s.complete('hobby-' + this.name.toLowerCase(), this.name + ' · Beautifully done!');
     if (this.name !== 'Yoga') this.changePose(28);
-    this.message('ROUND COMPLETE ✓ · Explore the next garden');
+    this.message('Complete ✓');
+    bridge.emit('hobby-status', 'Complete ✓');
     this.closeTimer = this.s.time.delayedCall(2400, this.onClose);
   }
   update(delta: number, edge: boolean, held: boolean, dir: number) {
@@ -165,6 +169,10 @@ export class HobbyGame {
     else this.movement(dt, hold, dir);
     this.shadow.setX(this.actor.x);
     const count = this.name === 'Yoga' ? `${this.poseIndex + 1} / 3 poses` : `${this.score} / 3`;
+    bridge.emit(
+      'hobby-status',
+      this.finished ? 'Complete ✓' : this.time < this.feedbackUntil ? this.lastFeedback : count,
+    );
     this.guide.setText(
       this.time < this.feedbackUntil ? this.lastFeedback : count + '  ·  ' + this.hint(),
     );
@@ -390,12 +398,13 @@ export class HobbyGame {
     this.s.scale.off('resize', this.resize);
     [this.actor, this.fx, this.ball, this.shadow, this.guide].forEach((o) => o.destroy());
     this.s.children.list.forEach((o) => {
-      if (o.getData('hobby-prompt')) (o as Phaser.GameObjects.Text).setVisible(true);
+      if (o.getData('hobby-prompt'))
+        (o as Phaser.GameObjects.Text).setVisible(viewWidth(this.s) > 650);
     });
     this.s.player.setVisible(true).setPosition(this.cx - 275, 600);
     (this.s.player.body as Phaser.Physics.Arcade.Body).enable = true;
     this.s.cameras.main
-      .setZoom(1)
+      .setZoom(renderScale)
       .setBounds(0, 0, this.s.physics.world.bounds.width, 850)
       .startFollow(this.s.player, true, 0.1, 0.1);
     bridge.emit('hobby-active', false);

@@ -110,3 +110,9 @@ The workflow and path fixes are prepared locally; creating them does not itself 
 Yoga uses a dedicated three-cell padded sheet (`ash-yoga.png`) and one visible pose at a time. Walking left mirrors Ash’s run, jump and idle facing. Screen-space falling leaves/stars and stronger pulsing pavilion lights animate every garden view.
 
 Old v3 saves in the removed Observatory return to the hobby stage; old portfolio saves move to the new portfolio index. Explored disciplines and hobby progress are retained.
+
+## Portrait and high-density rendering
+
+The game adapts to portrait screens using a compact header and one-line hobby instructions, with no duplicated world labels on phones. Phaser renders at up to 2x CSS pixel density; camera zoom uses the same factor so touch coordinates and world dimensions stay consistent. Yoga gets closer portrait framing. The start screen has an opaque dark panel. Character Design and My Disciplines have been removed from the menus.
+
+Meet Ash uses a four-frame illustrated talking portrait with a typewritten introduction: “Hi, I’m Ash. I’m a game developer.” The mouth and blink sequence runs during the text and can be replayed. It is a visual animation, with no generated voice.

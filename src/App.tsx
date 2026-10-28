@@ -1,3 +1,5 @@
+import { renderScale } from './game/display';
+import { TalkingAsh } from './TalkingAsh';
 import { assetUrl } from './data/assets';
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
@@ -13,22 +15,13 @@ import {
   type Progress,
 } from './data/progress';
 type Overlay =
-  | 'menu'
-  | 'help'
-  | 'pause'
-  | 'reveal'
-  | 'showcase'
-  | 'skills'
-  | 'design'
-  | 'gallery'
-  | 'map'
-  | 'final'
-  | null;
+  'menu' | 'help' | 'pause' | 'reveal' | 'showcase' | 'gallery' | 'map' | 'final' | null;
 export default function App() {
   const host = useRef<HTMLDivElement>(null),
     game = useRef<Phaser.Game | null>(null);
   const [miniActive, setMiniActive] = useState(false);
   const [hobbyName, setHobbyName] = useState('');
+  const [hobbyStatus, setHobbyStatus] = useState('');
   const [ready, setReady] = useState(false),
     [started, setStarted] = useState(false),
     [overlay, setOverlay] = useState<Overlay>('menu'),
@@ -63,6 +56,7 @@ export default function App() {
       ready: () => setReady(true),
       'hobby-active': setMiniActive,
       'hobby-name': setHobbyName,
+      'hobby-status': setHobbyStatus,
       progress: setProgress,
       health: setHealth,
       location: setLocation,
@@ -93,9 +87,9 @@ export default function App() {
       pixelArt: false,
       antialias: true,
       scale: {
-        mode: Phaser.Scale.RESIZE,
-        width: host.current!.clientWidth,
-        height: host.current!.clientHeight,
+        mode: Phaser.Scale.FIT,
+        width: Math.round(host.current!.clientWidth * renderScale),
+        height: Math.round(host.current!.clientHeight * renderScale),
       },
       physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 1050 }, debug: false } },
       scene: [Gateway],
@@ -103,6 +97,14 @@ export default function App() {
     });
     if (import.meta.env.DEV)
       (window as unknown as { __ashify: Phaser.Game }).__ashify = game.current;
+    const resize = new ResizeObserver(() => {
+      if (game.current?.isBooted && host.current)
+        game.current.scale.setGameSize(
+          Math.round(host.current.clientWidth * renderScale),
+          Math.round(host.current.clientHeight * renderScale),
+        );
+    });
+    resize.observe(host.current!);
     const blur = () => {
       clearTouch();
       if (state.current.started && state.current.overlay === null) setOverlay('pause');
@@ -116,6 +118,7 @@ export default function App() {
       Object.entries(listeners).forEach(([k, v]) => bridge.off(k, v));
       window.removeEventListener('blur', blur);
       document.removeEventListener('visibilitychange', visibility);
+      resize.disconnect();
       game.current?.destroy(true);
     };
   }, []);
@@ -134,12 +137,6 @@ export default function App() {
     const t = setInterval(() => setShowTime((v) => Math.min(v + 100, showcaseDuration)), 100);
     return () => clearInterval(t);
   }, [overlay, showKey, showcaseDuration]);
-  useEffect(() => {
-    const id = requestAnimationFrame(() =>
-      game.current?.scale.resize(host.current!.clientWidth, host.current!.clientHeight),
-    );
-    return () => cancelAnimationFrame(id);
-  }, [portrait]);
   useEffect(() => {
     if (!overlay) return;
     const first = document.querySelector<HTMLButtonElement>('.panel button, .title-screen button');
@@ -226,9 +223,6 @@ export default function App() {
           <button onClick={() => setOverlay('map')} aria-label="World map">
             ⌖
           </button>
-          <button onClick={() => setOverlay('skills')}>
-            ✧ <span>My disciplines</span> {progress.skills.length}/7
-          </button>
           <button
             aria-label="Toggle sound"
             onClick={() => {
@@ -263,16 +257,22 @@ export default function App() {
         {miniActive && !overlay && (
           <div className="activity-guide">
             <div>
-              <small>UNDER THE STARS · {hobbyName.toUpperCase()}</small>
+              <strong>{hobbyName}</strong>
               <p>{objective}</p>
             </div>
-            <button onClick={() => bridge.emit('leave-hobby')}>Leave activity · Q</button>
+            <button aria-label="Leave activity" onClick={() => bridge.emit('leave-hobby')}>
+              Exit ×
+            </button>
           </div>
         )}
-        {started && !miniActive && (
+        {miniActive && !overlay && (
+          <div className="hobby-status" role="status">
+            {hobbyStatus}
+          </div>
+        )}
+        {started && !miniActive && !overlay && (
           <div className="hud">
             <div>
-              <small>{String(world + 1).padStart(2, '0')} / 02 · EXPLORE AT YOUR PACE</small>
               <strong>{location}</strong>
               <p className="objective">{objective}</p>
               {bowEquipped && (
@@ -316,7 +316,7 @@ export default function App() {
         {overlay && overlay !== 'menu' && (
           <div className="scrim">
             <section
-              className={`panel ${overlay === 'design' ? 'design-panel' : ''} ${overlay === 'showcase' ? 'showcase show-' + showId : ''} ${overlay === 'final' ? 'final-panel' : ''}`}
+              className={`panel ${overlay === 'showcase' ? 'showcase show-' + showId : ''} ${overlay === 'final' ? 'final-panel' : ''}`}
               style={
                 overlay === 'showcase'
                   ? ({ '--skill-color': category.color } as React.CSSProperties)
@@ -374,7 +374,6 @@ export default function App() {
                       {portrait ? 'Landscape mode' : 'Portrait 9:16 mode'}
                     </button>
                     <button onClick={() => setOverlay('gallery')}>Project gallery</button>
-                    <button onClick={() => setOverlay('design')}>Character design</button>
                     <button
                       onClick={() => {
                         setStarted(true);
@@ -478,32 +477,6 @@ export default function App() {
                   </div>
                 </>
               )}
-              {overlay === 'skills' && (
-                <>
-                  <small>YOUR CREATIVE CONSTELLATION</small>
-                  <h2>
-                    {progress.skills.length === 7
-                      ? 'All seven disciplines explored'
-                      : `Disciplines explored: ${progress.skills.length}/7`}
-                  </h2>
-                  <div className="skill-grid">
-                    {categories.map((c) => (
-                      <div key={c.id} className={progress.skills.includes(c.id) ? 'unlocked' : ''}>
-                        <span style={{ color: c.color }}>{c.icon}</span>
-                        <b>{c.title}</b>
-                        <small>
-                          {progress.skills.includes(c.id) ? 'EXPLORED' : 'OPEN IN THE PORTFOLIO'}
-                        </small>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="gold">
-                    {progress.skills.length === 7
-                      ? '7 SKILLS. COUNTLESS IDEAS. ONE GAME DEVELOPER.'
-                      : 'Explore any discipline, in any order.'}
-                  </p>
-                </>
-              )}
               {overlay === 'map' && (
                 <>
                   <small>YOUR UNIVERSE, ONE PORTAL AT A TIME</small>
@@ -534,20 +507,6 @@ export default function App() {
                       </button>
                     ))}
                   </div>
-                </>
-              )}
-              {overlay === 'design' && (
-                <>
-                  <small>ASH / APPROVED CHARACTER DIRECTION</small>
-                  <h2>Ready for an adventure.</h2>
-                  <img
-                    className="design-sheet"
-                    src={assetUrl('assets/character/ash-approved.png')}
-                    alt="Ash wearing a natural black hijab, black sweatshirt and grey sweatpants"
-                  />
-                  <p className="muted">
-                    Black sweatshirt · grey sweatpants · natural black hijab · cream sneakers.
-                  </p>
                 </>
               )}
               {overlay === 'gallery' && (
@@ -599,18 +558,8 @@ export default function App() {
               )}
               {overlay === 'final' && (
                 <>
-                  <small>✦ CREATOR OF WORLDS ✦</small>
-                  <div className="final-symbols">⌁ &nbsp; ◎ &nbsp; ✧ &nbsp; ◇</div>
-                  <h2>Hi, I’m Ash.</h2>
-                  <p>
-                    I’m a game developer, a cosmic dreamer,
-                    <br />
-                    and an adventure lover.
-                  </p>
+                  <TalkingAsh />
                   <p className="gold">I TURN IDEAS INTO PLAYABLE WORLDS.</p>
-                  <h3>Welcome to my universe.</h3>
-                  <div className="brand-reveal">ASHIFY.GG</div>
-                  <p className="muted">FOLLOW MY JOURNEY TO UNLOCK THE NEXT LEVEL.</p>
                   <div className="menu-grid">
                     <button
                       className="primary"
@@ -631,9 +580,7 @@ export default function App() {
                       >
                         FOLLOW ON INSTAGRAM ↗
                       </a>
-                    ) : (
-                      <button disabled>INSTAGRAM · LINK COMING SOON</button>
-                    )}
+                    ) : null}
                     <button onClick={share}>SHARE THE GAME ↗</button>
                   </div>
                 </>
@@ -674,12 +621,14 @@ export default function App() {
             ))}
           </div>
         )}
-        <div className="bottom-note">
-          {!started
-            ? '✦  PRESS START TO KNOW ASH'
-            : 'A / D  WALK     E  INTERACT     OR CLICK A STATION'}
-          <span>TWO AREAS · ONE CREATIVE MIND</span>
-        </div>
+        {!overlay && (
+          <div className="bottom-note">
+            {!started
+              ? '✦  PRESS START TO KNOW ASH'
+              : 'A / D  WALK     E  INTERACT     OR CLICK A STATION'}
+            <span>TWO AREAS · ONE CREATIVE MIND</span>
+          </div>
+        )}
       </section>
       <footer>
         <span>IDEAS MADE PLAYABLE</span>

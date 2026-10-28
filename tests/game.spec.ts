@@ -6,7 +6,7 @@ async function start(page: any) {
 }
 async function hobby(page: any, name: string) {
   await page.getByRole('button', { name, exact: true }).click();
-  await expect(page.locator('.activity-guide')).toContainText(name.toUpperCase());
+  await expect(page.locator('.activity-guide')).toContainText(name);
 }
 async function value(page: any, prop: string) {
   return page.evaluate(
@@ -245,4 +245,75 @@ test('sky parallax and planet locations follow travel in both stages', async ({ 
   await page.waitForTimeout(800);
   await page.screenshot({ path: 'design/universe-portfolio.png' });
   expect((await snapshot()).factor).toBe(0.78);
+});
+
+test.describe('portrait polish', () => {
+  test.use({ hasTouch: true, deviceScaleFactor: 3, viewport: { width: 390, height: 844 } });
+  test('sharp canvas, compact controls, readable menu and animated introduction', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'START ADVENTURE' })).toBeEnabled();
+    await page.screenshot({ path: 'design/portrait-start.png' });
+    const pixels = await page
+      .locator('canvas')
+      .evaluate((c: HTMLCanvasElement) => ({
+        width: c.width,
+        css: c.getBoundingClientRect().width,
+      }));
+    expect(pixels.width / pixels.css).toBeGreaterThanOrEqual(1.95);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      390,
+    );
+    await expect(page.getByRole('button', { name: /My disciplines/ })).toHaveCount(0);
+    await page.getByRole('button', { name: 'START ADVENTURE' }).tap();
+    await page.getByRole('button', { name: 'Yoga', exact: true }).tap();
+    const guide = await page.locator('.activity-guide').boundingBox();
+    expect(guide!.height).toBeLessThan(75);
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: 'design/portrait-yoga.png' });
+    await page
+      .getByRole('button', { name: 'interact', exact: true })
+      .dispatchEvent('pointerdown', { pointerId: 1 });
+    await expect.poll(() => value(page, 'progress')).toBeGreaterThan(0.2);
+    await page
+      .getByRole('button', { name: 'interact', exact: true })
+      .dispatchEvent('pointerup', { pointerId: 1 });
+    await page.getByRole('button', { name: 'Leave activity' }).tap();
+    await page.getByRole('button', { name: 'Pause game' }).tap();
+    await expect(page.getByRole('button', { name: 'Character design', exact: true })).toHaveCount(
+      0,
+    );
+    await page.getByRole('button', { name: 'RESUME ADVENTURE' }).tap();
+    await page.getByRole('button', { name: 'View my work' }).tap();
+    await expect(page.locator('.hud')).toContainText('THE PORTFOLIO');
+    await page.waitForTimeout(800);
+    await page.evaluate(() => {
+      const s = (window as any).__ashify.scene.getScene('Gateway');
+      s.player.setPosition(2700, 600);
+    });
+    await page.getByRole('button', { name: 'interact', exact: true }).tap();
+    await expect(page.locator('.talking-portrait')).toBeVisible();
+    const frame = await page
+      .locator('.talking-portrait')
+      .evaluate((el) => getComputedStyle(el).backgroundPosition);
+    await expect
+      .poll(
+        () =>
+          page
+            .locator('.talking-portrait')
+            .evaluate((el) => getComputedStyle(el).backgroundPosition),
+        { intervals: [100] },
+      )
+      .not.toBe(frame);
+    await expect(page.locator('.greeting')).toContainText('I’m a game developer.', {
+      timeout: 8000,
+    });
+    await expect(page.locator('.final-panel')).not.toContainText('cosmic dreamer');
+    await expect(page.locator('.final-panel')).not.toContainText('adventure lover');
+    await page.screenshot({ path: 'design/portrait-meet-ash.png' });
+    expect(errors).toEqual([]);
+  });
 });

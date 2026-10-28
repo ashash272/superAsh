@@ -1302,3 +1302,361 @@ h1 {
     display: none;
   }
 }
+/* Compact, high-density portrait presentation. */
+.title-screen {
+  inset: 20px;
+  margin: auto;
+  width: min(620px, calc(100% - 40px));
+  height: fit-content;
+  max-height: calc(100% - 40px);
+  padding: 36px 28px;
+  border-radius: 24px;
+  background: linear-gradient(150deg, #11172ff5, #171830ee);
+  border: 1px solid #c6b1e650;
+  box-shadow: 0 20px 90px #0009;
+  backdrop-filter: blur(16px);
+}
+.title-screen h1 {
+  font-size: clamp(54px, 8vw, 100px);
+  letter-spacing: -4px;
+  margin: 28px 0 20px;
+}
+.title-screen h1 span {
+  font-size: 13px;
+  letter-spacing: 4px;
+}
+.title-screen .chapter-label,
+.title-screen .press-start {
+  display: none;
+}
+.title-screen p {
+  font-size: 15px;
+}
+.hud strong {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+.hud .objective {
+  font-size: 13px;
+  line-height: 1.4;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 5px 0 0;
+}
+.hud > div:first-child {
+  padding: 10px 14px;
+  max-width: 420px;
+}
+.activity-guide {
+  gap: 8px;
+  align-items: flex-start;
+}
+.activity-guide > div {
+  padding: 10px 14px;
+  max-width: 440px;
+}
+.activity-guide p {
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+.activity-guide strong {
+  font-size: 14px;
+}
+.activity-guide button {
+  padding: 10px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.hobby-status {
+  position: absolute;
+  bottom: 135px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 85%;
+  text-align: center;
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #132936e8;
+  color: #fff0ce;
+  font-size: 13px;
+  pointer-events: none;
+}
+.meet-ash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.talking-portrait {
+  width: 220px;
+  height: 220px;
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 8px 16px #0005);
+}
+.talking-portrait.is-talking {
+  animation: talking-breathe 1.5s ease-in-out infinite alternate;
+}
+@keyframes talking-breathe {
+  from {
+    transform: translateY(0) rotate(-0.5deg);
+  }
+  to {
+    transform: translateY(-3px) rotate(0.5deg);
+  }
+}
+.greeting h2 {
+  margin: 10px 0 6px;
+  font-size: 32px;
+}
+.greeting p {
+  min-height: 26px;
+  margin: 0;
+  font-size: 17px;
+}
+.replay-greeting {
+  font-size: 12px;
+  padding: 8px;
+}
+.final-panel .gold {
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin: 12px 0;
+}
+.final-panel .menu-grid {
+  margin-top: 15px;
+}
+.final-panel .menu-grid button {
+  font-size: 12px;
+  padding: 12px;
+}
+@media (max-width: 650px) {
+  .app,
+  .app.portrait {
+    padding: 0 7px;
+  }
+  .topbar {
+    height: 54px;
+    gap: 7px;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .wordmark {
+    font-size: 22px;
+    letter-spacing: -1.5px;
+  }
+  .topbar nav {
+    gap: 3px;
+  }
+  .topbar nav button,
+  .topbar nav button:nth-child(3) {
+    display: block;
+    font-size: 10px;
+    padding: 8px 6px;
+    letter-spacing: 0;
+  }
+  .topbar nav button[aria-label='World map'] {
+    display: none;
+  }
+  .topbar .edition {
+    display: none;
+  }
+  .viewport,
+  .portrait .viewport {
+    width: 100%;
+    height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
+    min-height: 0;
+    aspect-ratio: auto;
+    border-radius: 14px;
+  }
+  footer {
+    display: none;
+  }
+  .hobby-navigation {
+    top: 7px;
+    width: calc(100% - 14px);
+    max-width: none;
+    padding: 4px;
+    gap: 2px;
+    justify-content: space-between;
+    border-radius: 10px;
+  }
+  .hobby-navigation button {
+    font-size: 12px;
+    padding: 8px 10px;
+    flex: 1;
+  }
+  .viewport:has(.hobby-navigation) .hud {
+    top: 59px;
+  }
+  .hud {
+    left: 8px;
+    right: 8px;
+    top: 10px;
+  }
+  .hud > div:first-child {
+    padding: 8px 10px;
+    border-radius: 10px;
+    max-width: 100%;
+  }
+  .hud strong {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .hud .objective {
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 3px 0 0;
+  }
+  .activity-guide {
+    top: 59px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+  }
+  .activity-guide > div {
+    padding: 8px 10px;
+    flex: 1;
+    border-radius: 10px;
+  }
+  .activity-guide strong {
+    display: none;
+  }
+  .activity-guide p {
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+  }
+  .activity-guide button {
+    margin: 0;
+    font-size: 11px;
+    padding: 10px 9px;
+    border-radius: 10px;
+  }
+  .touch-controls {
+    left: 12px;
+    right: 12px;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    gap: 9px;
+  }
+  .touch-controls button {
+    width: 46px;
+    height: 46px;
+    font-size: 22px;
+    padding: 0;
+    opacity: 1;
+  }
+  .touch-controls button:last-child {
+    width: 66px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .touch-controls button[aria-label='jump'] {
+    display: none;
+  }
+  .touch-controls button[aria-label='interact'] {
+    margin-left: auto;
+  }
+  .hobby-status {
+    bottom: 82px;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .bottom-note {
+    display: none;
+  }
+  .title-screen {
+    width: calc(100% - 24px);
+    inset: 12px;
+    padding: 28px 18px;
+    max-height: calc(100% - 24px);
+    overflow: auto;
+  }
+  .title-screen h1 {
+    font-size: 60px;
+    letter-spacing: -3px;
+    margin: 24px 0 18px;
+  }
+  .title-screen h1 span {
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: 15px;
+  }
+  .title-screen .eyebrow {
+    font-size: 10px;
+    letter-spacing: 1px;
+    gap: 8px;
+  }
+  .title-screen .eyebrow span {
+    width: 18px;
+  }
+  .title-screen p {
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .title-screen .primary {
+    font-size: 12px;
+    padding: 14px 18px;
+  }
+  .title-screen .text-button {
+    font-size: 11px;
+  }
+  .scrim {
+    padding: 10px;
+  }
+  .panel {
+    padding: 27px 17px;
+    border-radius: 16px;
+  }
+  .panel h2 {
+    font-size: 25px;
+  }
+  .panel p {
+    font-size: 13px;
+  }
+  .final-panel .talking-portrait {
+    width: 190px;
+    height: 190px;
+  }
+  .final-panel .greeting h2 {
+    font-size: 27px;
+    margin: 5px 0;
+  }
+  .final-panel .greeting p {
+    font-size: 15px;
+  }
+  .final-panel .menu-grid {
+    gap: 8px;
+  }
+  .final-panel .menu-grid button {
+    font-size: 10px;
+    padding: 12px 8px;
+    letter-spacing: 0.4px;
+  }
+  .toast {
+    top: auto;
+    bottom: 140px;
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+}
+.greeting h2 {
+  min-height: 38px;
+}
+@media (max-width: 360px) {
+  .wordmark {
+    font-size: 19px;
+  }
+  .topbar nav button {
+    font-size: 9px;
+    padding: 8px 5px;
+  }
+  .title-screen h1 {
+    font-size: 50px;
+  }
+  .final-panel .talking-portrait {
+    width: 155px;
+    height: 155px;
+  }
+}

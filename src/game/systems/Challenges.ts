@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { viewWidth } from '../display';
 import { HobbyGame } from './HobbyGame';
 import { hobbies, hobbyCenter, buildHobbySpace } from './HobbySpaces';
 import type { Gateway } from '../Gateway';
@@ -34,10 +35,7 @@ export class Challenges {
   }
   hobbies() {
     const s = this.s;
-    bridge.emit(
-      'objective',
-      'I love astronomy—the stars always make me curious. Explore my hobbies beneath a sky full of possibilities.',
-    );
+    bridge.emit('objective', 'I love astronomy. Pick a hobby to play.');
     hobbies.forEach((name, i) => {
       const cx = hobbyCenter(i);
       buildHobbySpace(s, name, cx, i);
@@ -47,6 +45,7 @@ export class Challenges {
         .setBackgroundColor('#172e3be8')
         .setPadding(12, 8)
         .setData('hobby-prompt', true)
+        .setVisible(viewWidth(s) > 650)
         .setInteractive({ useHandCursor: true })
         .on('pointerdown', () => {
           if (s.started && !s.held && !this.mini) action();
@@ -66,15 +65,12 @@ export class Challenges {
       this.mini?.destroy();
       this.mini = undefined;
       this.lockMovement = false;
-      bridge.emit('objective', 'Explore the next space, replay a favourite, or view my work.');
+      bridge.emit('objective', 'Pick a hobby, or view my work.');
     });
   }
   portfolio() {
     const s = this.s;
-    bridge.emit(
-      'objective',
-      'My creative toolkit. Open any portal to explore a discipline. No challenges or required order.',
-    );
+    bridge.emit('objective', 'Open a portal to explore my work.');
     categories.forEach((c, i) => {
       const x = 280 + i * 340;
       s.portal(x, 570, c.title, Phaser.Display.Color.HexStringToColor(c.color).color);

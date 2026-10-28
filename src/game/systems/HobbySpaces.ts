@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { viewWidth } from '../display';
 import type { Gateway } from '../Gateway';
 
 export const hobbies = ['Tennis', 'Padel', 'Yoga', 'Archery'];
@@ -74,7 +75,6 @@ export function buildHobbySpace(s: Gateway, name: string, cx: number, index: num
     g.fillCircle(cx + 342, 637, 10);
     g.lineStyle(6, 0xe4d6bc);
     g.lineBetween(cx + 308, 572, cx + 285, 558);
-    s.label(cx + 325, 680, 'PRACTICE LAUNCHER', 12, '#e8f2ed');
   } else if (name === 'Archery') {
     g.fillStyle(0x7c8b64, 0.85);
     g.fillRoundedRect(left, 605, 880, 45, 18);
@@ -151,16 +151,6 @@ export function buildHobbySpace(s: Gateway, name: string, cx: number, index: num
   s.label(cx, 318, String(index + 1).padStart(2, '0') + '  /  ' + name.toUpperCase(), 23, '#fff0d5')
     .setBackgroundColor('#172b37e8')
     .setPadding(20, 10)
-    .setData('hobby-prompt', true);
-  s.label(
-    cx,
-    715,
-    court
-      ? 'A court of your own. Find your rhythm.'
-      : name === 'Archery'
-        ? 'Breathe. Draw. Release.'
-        : 'A little space to slow down.',
-    15,
-    '#f4eadb',
-  );
+    .setData('hobby-prompt', true)
+    .setVisible(viewWidth(s) > 650);
 }

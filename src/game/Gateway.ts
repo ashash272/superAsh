@@ -1,6 +1,7 @@
 import { assetUrl } from '../data/assets';
 import Phaser from 'phaser';
 import { createArt } from './art';
+import { renderScale, viewWidth } from './display';
 import { createUniverse } from './Universe';
 import { audio, bridge, touch, clearTouch } from './bridge';
 import { readProgress, saveProgress, worlds, categories, type Progress } from '../data/progress';
@@ -107,6 +108,7 @@ export class Gateway extends Phaser.Scene {
     this.player = this.physics.add.sprite(120, 600, 'ash-atlas', 8).setScale(0.36).setDepth(10);
     this.player.setSize(68, 192).setOffset(64, 54).setMaxVelocity(290, 750).setDragX(1800);
     this.physics.add.collider(this.player, this.platforms);
+    this.cameras.main.setZoom(renderScale);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setFollowOffset(0, 40);
     this.keys = this.input.keyboard!.addKeys('A,D,W,S,F,LEFT,RIGHT,SPACE,UP,E,ENTER,ESC') as Record<
@@ -520,7 +522,11 @@ export class Gateway extends Phaser.Scene {
         Phaser.Math.Clamp(this.player.x, 160, worlds[this.world].width - 160),
         this.player.y + 85,
       )
-      .setVisible(!!hint);
+      .setVisible(
+        !!hint &&
+          !this.logic.stations.some((st) => Math.abs(st.x - this.player.x) < 110) &&
+          viewWidth(this) > 650,
+      );
     if (this.drawing) {
       this.player.anims.stop();
       this.player.setFrame(17);
