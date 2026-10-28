@@ -1,5 +1,6 @@
 import { renderScale } from './game/display';
 import { TalkingAsh } from './TalkingAsh';
+import { ActionIcon } from './ActionIcon';
 import { assetUrl } from './data/assets';
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
@@ -22,6 +23,7 @@ export default function App() {
   const [miniActive, setMiniActive] = useState(false);
   const [hobbyName, setHobbyName] = useState('');
   const [hobbyStatus, setHobbyStatus] = useState('');
+  const [nearbyAction, setNearbyAction] = useState('Star');
   const [ready, setReady] = useState(false),
     [started, setStarted] = useState(false),
     [overlay, setOverlay] = useState<Overlay>('menu'),
@@ -57,6 +59,7 @@ export default function App() {
       'hobby-active': setMiniActive,
       'hobby-name': setHobbyName,
       'hobby-status': setHobbyStatus,
+      'action-context': setNearbyAction,
       progress: setProgress,
       health: setHealth,
       location: setLocation,
@@ -605,6 +608,7 @@ export default function App() {
               <button
                 key={key}
                 aria-label={key}
+                title={key === 'interact' ? `${miniActive ? hobbyName : nearbyAction} · Action (E)` : undefined}
                 onPointerDown={(e) => {
                   e.preventDefault();
                   e.currentTarget.setPointerCapture(e.pointerId);
@@ -616,13 +620,7 @@ export default function App() {
                 onPointerCancel={() => (touch[key] = false)}
                 onLostPointerCapture={() => (touch[key] = false)}
               >
-                {i === 3 && miniActive
-                  ? hobbyName === 'Archery'
-                    ? 'DRAW'
-                    : hobbyName === 'Tennis' || hobbyName === 'Padel'
-                      ? 'HIT'
-                      : 'HOLD'
-                  : ['←', '→', '↑', 'E'][i]}
+                {i === 3 ? <ActionIcon action={miniActive ? hobbyName : nearbyAction} /> : ['←', '→', '↑'][i]}
               </button>
             ))}
           </div>

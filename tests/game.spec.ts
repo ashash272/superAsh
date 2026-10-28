@@ -351,3 +351,20 @@ test('portal labels highlight nearby and interaction guide stays visible', async
   expect(await page.evaluate(() => (window as any).__ashify.scene.getScene('Gateway').prompt.visible)).toBe(true);
   await page.screenshot({path: 'design/portal-labels-mobile.png'});
 });
+
+test('action icon follows nearby hobbies and portals', async ({ page }) => {
+  await page.setViewportSize({width:390,height:844});
+  await start(page);
+  for (const [x, action] of [[100,'Star'],[345,'Tennis'],[1395,'Padel'],[2445,'Yoga'],[3495,'Archery']] as const) {
+    await page.evaluate((x) => { const s=(window as any).__ashify.scene.getScene('Gateway'); s.player.setPosition(x,600); s.player.setVelocity(0,0); },x);
+    await expect(page.locator('.action-icon')).toHaveAttribute('data-action', action);
+  }
+  await page.getByRole('button',{name:'Yoga',exact:true}).click();
+  await expect(page.locator('.action-icon')).toHaveAttribute('data-action','Yoga');
+  await page.getByRole('button',{name:'Leave activity'}).click();
+  await page.getByRole('button',{name:'View my work'}).click();
+  await page.waitForTimeout(800);
+  await page.evaluate(() => { (window as any).__ashify.scene.getScene('Gateway').player.setPosition(280,600); });
+  await expect(page.locator('.action-icon')).toHaveAttribute('data-action','Portal');
+  await page.screenshot({path:'design/context-action-icons.png'});
+});

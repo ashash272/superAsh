@@ -1870,3 +1870,6 @@ h1 {
 
 
 
+.action-icon { width: 28px; height: 28px; display: block; margin: auto; color: #ead9ff; }
+.touch-controls button[aria-label='interact'] { display: grid; place-items: center; }
+.touch-controls button[aria-label='interact']:active .action-icon { color: #ffe5a0; }

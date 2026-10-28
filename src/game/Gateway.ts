@@ -545,6 +545,13 @@ export class Gateway extends Phaser.Scene {
       time < this.invulnerableUntil ? (Math.floor(time / 100) % 2 ? 0.35 : 1) : 1,
     );
     let hint = this.logic.update(delta, edge, interact, dir);
+    const nearby = this.logic.stations.find((st) => Math.abs(st.x - this.player.x) < 110);
+    const action = this.player.x > worlds[this.world].width - 260
+      ? 'Portal' : nearby ? this.world === 1 ? 'Portal' : nearby.title.replace('Play ', '') : 'Star';
+    if (this.registry.get('action-context') !== action) {
+      this.registry.set('action-context', action);
+      bridge.emit('action-context', action);
+    }
     if (this.logic.mini) {
       this.prompt.setVisible(false);
       return;
