@@ -1877,3 +1877,16 @@ h1 {
 .action-content:has(.action-caption) .action-icon { width: 23px; height: 23px; }
 .action-caption { font-size: 11px; line-height: 1; font-weight: 600; letter-spacing: 0; }
 .action-word { font-size: 13px; line-height: 1; font-weight: 700; letter-spacing: .5px; }
+/* Independent hand cutouts: body and shoulder never participate in hand transforms. */
+.final-panel .fullbody-portrait { width: 200px; height: 300px; margin-left: 0; }
+.fullbody-portrait .talking-body { clip-path: none; background: none; }
+.greeting-rig { width:100%; height:100%; overflow:visible; }
+.greeting-rig .ash-wink { mask-image:none; }
+.rig-wave { transform-origin: 308px 348px; }
+.is-waving .rig-wave { animation: rig-wave 900ms ease-in-out infinite; }
+.rig-v, .is-victory .rig-wave { display:none; }
+.is-victory .rig-v { display:block; }
+.fullbody-portrait .wink-stars { left:51.8%; top:8.7%; }
+@keyframes rig-wave { 0%,100% { transform:rotate(-5deg); } 50% { transform:rotate(5deg); } }
+@media(max-height:740px) { .final-panel .fullbody-portrait {width:160px;height:240px;margin-left:0;} }
+@media(prefers-reduced-motion:reduce) {.is-waving .rig-wave {animation:none;} }

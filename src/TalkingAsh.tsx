@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
-import { assetUrl } from './data/assets';
+import { GreetingRig } from './GreetingRig';
 const greeting = 'Hi, I’m Ash. I’m a game developer.';
 export function TalkingAsh() {
   const [letters, setLetters] = useState(0),
@@ -22,17 +22,8 @@ export function TalkingAsh() {
         className={`talking-portrait fullbody-portrait ${letters < greeting.length ? 'is-waving' : 'is-victory'}`}
         role="img"
         aria-label="Ash greeting you"
-        style={{
-          backgroundImage: `url(${assetUrl('assets/character/ash-fullbody-greeting.png')})`,
-        }}
       >
-        <div className="talking-body" />
-        <div className="greeting-hand" aria-hidden="true" />
-        <div
-          className={`ash-wink ${winking ? 'active' : ''}`}
-          aria-hidden="true"
-          style={{ backgroundImage: `url(${assetUrl('assets/character/ash-fullbody-greeting.png')})` }}
-        />
+        <div className="talking-body"><GreetingRig winking={winking} /></div>
         {winking && (
           <div className="wink-stars" aria-hidden="true">
             {Array.from({ length: 7 }, (_, i) => (
@@ -62,3 +53,4 @@ export function TalkingAsh() {
     </div>
   );
 }
+

@@ -308,7 +308,7 @@ test.describe('portrait polish', () => {
     await expect(page.locator('.talking-portrait')).toHaveClass(/is-waving/);
     await page.screenshot({ path: 'design/ash-fullbody-wave.png' });
     await expect(page.locator('.talking-body')).toHaveCSS('transform', 'none');
-    await expect(page.locator('.talking-body')).toHaveCSS('background-position', '0px 0px');
+    await expect(page.locator('.rig-body')).toHaveCSS('transform', 'none');
     await expect(page.locator('.talking-mouth')).toHaveCount(0);
     await expect(page.locator('.talking-portrait')).toHaveCSS('transform', 'none');
     await expect(page.locator('.talking-body')).toHaveCSS('transform', 'none');
@@ -368,4 +368,5 @@ test('action icon follows nearby hobbies and portals', async ({ page }) => {
   await expect(page.locator('.action-icon')).toHaveAttribute('data-action','Portal');
   await page.screenshot({path:'design/context-action-icons.png'});
 });
+
 
