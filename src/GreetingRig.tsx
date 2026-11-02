@@ -1,17 +1,20 @@
 import { assetUrl } from './data/assets';
 export function GreetingRig({ winking }: { winking: boolean }) {
- const base=assetUrl('assets/character/ash-approved-rig.png');
+ const base=assetUrl('assets/character/ash-exact-approved.png');
+ const victory=assetUrl('assets/character/ash-exact-victory.png');
  return <svg className="greeting-rig" viewBox="0 0 1024 1536" aria-hidden="true">
  <defs>
- <clipPath id="ash-body-cut"><path d="M275 342Q300 328 338 337L345 360Q350 305 420 274L430 250Q401 214 428 128Q449 24 518 23Q619 20 635 139L625 240 660 290Q713 320 730 416L756 569 750 738 702 775 700 838 668 891 681 972 724 1140 768 1316 763 1384Q788 1498 725 1506L660 1490 650 1460 657 1355 631 1309 614 1243 564 1110 545 1010 544 1266 538 1317 539 1391Q472 1439 364 1427L355 1401 376 1368 415 1310 403 1270 371 1120 340 960 330 710 326 664 355 549 376 498Q302 587 249 511L230 459 241 407 275 367Z"/></clipPath>
- <clipPath id="ash-wave-cut"><path d="M175 261 166 241 142 220 104 146Q98 130 108 130L148 177 124 104Q117 88 128 88L170 156 142 88Q137 72 148 73L190 150 181 86Q180 70 190 73L214 149 222 176 239 138Q249 124 256 131L245 171 231 207 219 241 221 251Z"/></clipPath>
- <clipPath id="ash-v-cut"><path d="M850 250 851 222 844 191 846 161 828 91Q821 74 832 77L869 144 895 83Q902 64 911 74L894 153Q912 155 916 174L925 190 917 221 897 261Z"/></clipPath>
- <clipPath id="ash-eye-cut"><ellipse cx="530" cy="134" rx="29" ry="16"/></clipPath>
+ <clipPath id="ash-body-cut"><path d="M299 351Q326 365 354 345L359 325Q381 285 422 271L432 246Q412 206 430 144Q453 37 518 37Q610 37 624 137L617 243 659 283Q704 302 718 401L734 553 723 578 724 694 694 760 684 811 679 850 651 876 629 859 629 800 634 764 628 738 624 748Q636 945 682 1089L746 1289 738 1327 747 1380Q767 1466 721 1478L678 1475Q647 1466 651 1418L660 1349 638 1330 617 1252 564 1108 536 977 532 1223 513 1294 523 1331 532 1368Q470 1412 366 1397L361 1377 376 1358 427 1307 432 1270 419 1263Q382 1118 357 943L334 727 335 697 322 662 356 551 376 498Q308 588 269 510L247 449 261 398 294 373Z"/></clipPath>
+ <clipPath id="ash-wave-cut"><path d="M304 361 300 341 284 319 265 277Q258 262 267 261L294 299 280 245Q276 229 284 230L310 286 294 233Q289 215 299 218L326 278 320 232Q318 217 327 219L341 278 347 291 356 264Q362 253 370 257L365 287 366 313 354 344 349 363Z"/></clipPath>
+ <clipPath id="ash-v-cut"><path d="M305 362 300 342Q288 329 287 307L290 293 297 288 296 278 304 272 292 233Q287 216 297 218L319 270 327 226Q327 210 337 213L341 270 347 293 351 320 348 361Z"/></clipPath>
+ <clipPath id="ash-cuff-cut"><path d="M299 354Q327 368 354 351L357 382Q329 412 302 388Z"/></clipPath>
+ <clipPath id="ash-eye-cut"><ellipse cx="534" cy="138" rx="26" ry="13"/></clipPath>
  </defs>
  <image className="rig-body" href={base} width="1024" height="1536" clipPath="url(#ash-body-cut)"/>
- <g className="rig-wave"><g transform="translate(182 171) scale(.7)"><image href={base} width="1024" height="1536" clipPath="url(#ash-wave-cut)"/></g></g>
- {/* Mirror only the victory hand around its wrist; keep the sleeve and shoulder fixed. */}
- <g className="rig-v" transform="translate(919 171) scale(-.7 .7)"><image href={base} width="1024" height="1536" clipPath="url(#ash-v-cut)"/></g>
- <image className={`ash-wink ${winking?'active':''}`} href={assetUrl('assets/character/ash-approved-rig-wink.png')} width="1024" height="1536" clipPath="url(#ash-eye-cut)"/>
+ <g className="rig-wave"><image href={base} width="1024" height="1536" clipPath="url(#ash-wave-cut)"/></g>
+ <g className="rig-v"><image href={victory} width="1024" height="1536" clipPath="url(#ash-v-cut)"/></g>
+ <image href={base} width="1024" height="1536" clipPath="url(#ash-cuff-cut)"/>
+ <image className={`ash-wink ${winking?'active':''}`} href={victory} width="1024" height="1536" clipPath="url(#ash-eye-cut)"/>
  </svg>;
 }
+

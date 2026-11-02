@@ -1890,3 +1890,11 @@ h1 {
 @keyframes rig-wave { 0%,100% { transform:rotate(-5deg); } 50% { transform:rotate(5deg); } }
 @media(max-height:740px) { .final-panel .fullbody-portrait {width:160px;height:240px;margin-left:0;} }
 @media(prefers-reduced-motion:reduce) {.is-waving .rig-wave {animation:none;} }
+/* Pin rotation to the wrist in SVG coordinates, with the sleeve cuff in front. */
+.rig-wave { transform-box: view-box; transform-origin: 307px 350px; }
+@keyframes rig-wave { 0%,100% { transform:rotate(-9deg); } 50% { transform:rotate(9deg); } }
+.final-panel .fullbody-portrait { filter: none; }
+/* Approved original pixels; no detached/re-sized replacement wave hand. */
+.rig-wave { transform-origin: 328px 359px; transform-box: view-box; }
+@keyframes rig-wave { 0%,100% {transform:rotate(-3deg);} 50% {transform:rotate(3deg);} }
+.fullbody-portrait .wink-stars {left:52.1%;top:9%;}
