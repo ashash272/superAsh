@@ -16,7 +16,7 @@ const assets = import.meta.glob<string>('../../projects/2DGames/*/*.{jpeg,jpg,pn
 });
 const games: Project[] = Object.entries(descriptions).map(([file, description]) => {
   const folder = file.slice(0, file.lastIndexOf('/') + 1);
-  const name = folder.endsWith('/Game one/') ? 'Le Germania' : folder.split('/').at(-2)!;
+  const name = folder.endsWith('/Game one/') ? 'Le Germania' : folder.endsWith('/Game two/') ? 'Oscar Game' : folder.split('/').at(-2)!;
   return {
     name,
     description: description.trim(),

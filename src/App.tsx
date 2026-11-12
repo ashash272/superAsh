@@ -1,4 +1,4 @@
-import { ProjectCard } from './ProjectCard';
+import { ProjectShelf } from './ProjectCard';
 import { renderScale } from './game/display';
 import { TalkingAsh } from './TalkingAsh';
 import { ActionIcon } from './ActionIcon';
@@ -424,9 +424,7 @@ export default function App() {
                     </div>
                   )}
                   <h2>{category.title}</h2>
-                  {category.projects.length ? category.projects.map(project => (
-                    <ProjectCard key={project.name} project={project} />
-                  )) : (
+                  {category.projects.length ? <ProjectShelf projects={category.projects} /> : (
                     <>
                       <p className="gold">PROJECT SHOWCASE COMING SOON</p>
                       <p className="muted">A temporary presentation. Real projects arrive later.</p>
@@ -481,11 +479,9 @@ export default function App() {
                       : 'New worlds are on their way.'}
                   </h2>
                   {categories.some((c) => c.projects.length) ? (
-                    categories.flatMap((c) =>
-                      c.projects.map((p) => (
-                        <div key={c.id + p.name}><small>{c.title}</small><ProjectCard project={p} /></div>
-                      )),
-                    )
+                    categories.filter(c => c.projects.length).map(c => (
+                      <section key={c.id}><h3>{c.title}</h3><ProjectShelf projects={c.projects} /></section>
+                    ))
                   ) : (
                     <>
                       <div className="empty-orbit">✧</div>

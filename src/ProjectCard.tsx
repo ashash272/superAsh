@@ -1,13 +1,31 @@
 import { useState } from 'react';
 import type { Project } from './data/progress';
 
-export function ProjectCard({ project }: { project: Project }) {
-  const [index, select] = useState(0);
-  const item = project.media[index];
-  return (
-    <article className="gallery-project">
+export function ProjectShelf({ projects }: { projects: Project[] }) {
+  const [selected, setSelected] = useState(0);
+  const project = projects[selected];
+  return <>
+    <nav className="game-picker" aria-label="Choose a game">
+      {projects.map((game, i) => <button key={game.name} aria-pressed={i === selected}
+        onClick={() => setSelected(i)}>{game.name}</button>)}
+    </nav>
+    <article key={project.name} className="gallery-project">
+      <small>Game {selected + 1} of {projects.length}</small>
       <h3>{project.name}</h3>
       <p>{project.description}</p>
+      <MediaSlider title="Videos" media={project.media.filter(item => item.type === 'video')} />
+      <MediaSlider title="Photos" media={project.media.filter(item => item.type === 'image')} />
+    </article>
+  </>;
+}
+
+function MediaSlider({ title, media }: { title: string; media: Project['media'] }) {
+  const [index, select] = useState(0);
+  const item = media[index];
+  if (!item) return null;
+  return (
+    <section aria-label={title}>
+      <h4>{title}</h4>
       {item && (
         <div className="project-media">
           {item.type === 'video' ? (
@@ -22,20 +40,18 @@ export function ProjectCard({ project }: { project: Project }) {
           ) : (
             <img src={item.src} alt={item.alt} loading="lazy" />
           )}
-          {project.media.length > 1 && (
-            <nav aria-label={project.name + ' media'}>
+          <span className="media-count" aria-live="polite">{index + 1}/{media.length}</span>
+          {media.length > 1 && (
+            <nav aria-label={title}>
               <button
                 aria-label="Previous media"
-                onClick={() => select((index + project.media.length - 1) % project.media.length)}
+                onClick={() => select((index + media.length - 1) % media.length)}
               >
                 ←
               </button>
-              <span aria-live="polite">
-                {item.type === 'video' ? 'Video' : 'Photo'} · {index + 1} / {project.media.length}
-              </span>
               <button
                 aria-label="Next media"
-                onClick={() => select((index + 1) % project.media.length)}
+                onClick={() => select((index + 1) % media.length)}
               >
                 →
               </button>
@@ -43,6 +59,6 @@ export function ProjectCard({ project }: { project: Project }) {
           )}
         </div>
       )}
-    </article>
+    </section>
   );
 }
