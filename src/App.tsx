@@ -1,3 +1,4 @@
+import { ProjectCard } from './ProjectCard';
 import { renderScale } from './game/display';
 import { TalkingAsh } from './TalkingAsh';
 import { ActionIcon } from './ActionIcon';
@@ -37,16 +38,11 @@ export default function App() {
     [boss, setBoss] = useState(3),
     [muted, setMuted] = useState(false),
     [portrait, setPortrait] = useState(false),
-    [showTime, setShowTime] = useState(0),
-    [showKey, setShowKey] = useState(0),
     [showId, setShowId] = useState('2d'),
     [resetConfirm, setResetConfirm] = useState(false);
   const state = useRef({ started, overlay });
   state.current = { started, overlay };
   const category = categories.find((c) => c.id === showId)!;
-  const showcaseDuration = category.projects.length
-    ? Math.max(8000, category.duration)
-    : category.duration;
   const start = () => {
     audio.unlock();
     setStarted(true);
@@ -135,12 +131,6 @@ export default function App() {
     return () => clearTimeout(t);
   }, [toast]);
   useEffect(() => {
-    if (overlay !== 'showcase') return;
-    setShowTime(0);
-    const t = setInterval(() => setShowTime((v) => Math.min(v + 100, showcaseDuration)), 100);
-    return () => clearInterval(t);
-  }, [overlay, showKey, showcaseDuration]);
-  useEffect(() => {
     if (!overlay) return;
     const first = document.querySelector<HTMLButtonElement>('.panel button, .title-screen button');
     first?.focus();
@@ -184,20 +174,6 @@ export default function App() {
       setToast('Sharing cancelled or unavailable in this browser.');
     }
   };
-  const project =
-    category.projects[
-      Math.min(
-        category.projects.length - 1,
-        Math.floor((showTime / showcaseDuration) * category.projects.length),
-      )
-    ];
-  const medium =
-    project?.media[
-      Math.min(
-        project.media.length - 1,
-        Math.floor(showTime / 2500) % Math.max(1, project.media.length),
-      )
-    ];
   return (
     <main className={portrait ? 'app portrait' : 'app'}>
       <header className="topbar">
@@ -440,23 +416,7 @@ export default function App() {
               {overlay === 'showcase' && (
                 <>
                   <small>CREATOR’S DIMENSION / {category.title.toUpperCase()}</small>
-                  {medium ? (
-                    <div className="project-media">
-                      {medium.type === 'video' ? (
-                        <video
-                          key={medium.src}
-                          src={assetUrl(medium.src)}
-                          autoPlay
-                          muted
-                          playsInline
-                          controls
-                          preload="metadata"
-                        />
-                      ) : (
-                        <img key={medium.src} src={assetUrl(medium.src)} alt={medium.alt} />
-                      )}
-                    </div>
-                  ) : (
+                  {!category.projects.length && (
                     <div className="showcase-orbit">
                       {category.icon}
                       <i />
@@ -464,13 +424,9 @@ export default function App() {
                     </div>
                   )}
                   <h2>{category.title}</h2>
-                  {project ? (
-                    <>
-                      <h3>{project.name}</h3>
-                      <p>{project.description}</p>
-                      <p className="gold">{project.technologies.join(' · ')}</p>
-                    </>
-                  ) : (
+                  {category.projects.length ? category.projects.map(project => (
+                    <ProjectCard key={project.name} project={project} />
+                  )) : (
                     <>
                       <p className="gold">PROJECT SHOWCASE COMING SOON</p>
                       <p className="muted">A temporary presentation. Real projects arrive later.</p>
@@ -478,7 +434,6 @@ export default function App() {
                   )}
 
                   <div className="button-row">
-                    <button onClick={() => setShowKey((k) => k + 1)}>↻ Replay</button>
                     <button className="primary" onClick={finish}>
                       {'BACK TO PORTFOLIO'} ↗
                     </button>
@@ -528,25 +483,7 @@ export default function App() {
                   {categories.some((c) => c.projects.length) ? (
                     categories.flatMap((c) =>
                       c.projects.map((p) => (
-                        <article className="gallery-project" key={c.id + p.name}>
-                          <small>{c.title}</small>
-                          <h3>{p.name}</h3>
-                          <p>{p.description}</p>
-                          {p.media.map((m) =>
-                            m.type === 'image' ? (
-                              <img loading="lazy" key={m.src} src={assetUrl(m.src)} alt={m.alt} />
-                            ) : (
-                              <video
-                                key={m.src}
-                                src={assetUrl(m.src)}
-                                controls
-                                preload="none"
-                                playsInline
-                              />
-                            ),
-                          )}
-                          <p>{p.technologies.join(' · ')}</p>
-                        </article>
+                        <div key={c.id + p.name}><small>{c.title}</small><ProjectCard project={p} /></div>
                       )),
                     )
                   ) : (

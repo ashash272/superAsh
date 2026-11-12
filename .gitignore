@@ -5,3 +5,4 @@ test-results/
 my-assets/
 *.log
 .npm-cache/
+/projects/**/*.mov

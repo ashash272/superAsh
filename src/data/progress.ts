@@ -4,6 +4,33 @@ export type Project = {
   technologies: string[];
   media: { type: 'image' | 'video'; src: string; alt: string }[];
 };
+const descriptions = import.meta.glob<string>('../../projects/2DGames/*/description.txt', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+});
+const assets = import.meta.glob<string>('../../projects/2DGames/*/*.{jpeg,jpg,png,webp,mp4,webm}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+const games: Project[] = Object.entries(descriptions).map(([file, description]) => {
+  const folder = file.slice(0, file.lastIndexOf('/') + 1);
+  const name = folder.endsWith('/Game one/') ? 'Le Germania' : folder.split('/').at(-2)!;
+  return {
+    name,
+    description: description.trim(),
+    technologies: [],
+    media: Object.entries(assets)
+      .filter(([path]) => path.startsWith(folder))
+      .sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
+      .map(([path, src], i) => ({
+        type: /\.(mp4|webm)$/i.test(path) ? 'video' : 'image',
+        src,
+        alt: name + ' · ' + (i + 1),
+      })),
+  };
+});
 export const categories = [
   ['2d', '2D Games', '◇', '#92e5d0'],
   ['3d', '3D Games', '▧', '#c3a1ff'],
@@ -17,7 +44,7 @@ export const categories = [
   title,
   icon,
   color,
-  projects: [] as Project[],
+  projects: id === '2d' ? games : [],
   duration: 6000,
 }));
 export const social = { instagram: '' };

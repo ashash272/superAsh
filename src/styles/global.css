@@ -1898,3 +1898,7 @@ h1 {
 .rig-wave { transform-origin: 328px 359px; transform-box: view-box; }
 @keyframes rig-wave { 0%,100% {transform:rotate(-3deg);} 50% {transform:rotate(3deg);} }
 .fullbody-portrait .wink-stars {left:52.1%;top:9%;}
+.project-media { background: #171325; border: 1px solid #ffffff24; border-radius: 14px; overflow: hidden; }
+.project-media :is(img, video) { display: block; width: 100%; height: min(36dvh, 300px); object-fit: contain; }
+.project-media nav { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; }
+.project-media nav button { min-width: 44px; min-height: 44px; }
