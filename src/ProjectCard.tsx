@@ -13,6 +13,10 @@ export function ProjectShelf({ projects }: { projects: Project[] }) {
       <small>Game {selected + 1} of {projects.length}</small>
       <h3>{project.name}</h3>
       <p>{project.description}</p>
+      {project.playUrl && (
+        <a className="gold" href={project.playUrl} target="_blank" rel="noopener noreferrer"
+          aria-label="Play the game here (opens in a new tab)">🎮 Play the game here ↗</a>
+      )}
       <MediaSlider title="Videos" media={project.media.filter(item => item.type === 'video')} />
       <MediaSlider title="Photos" media={project.media.filter(item => item.type === 'image')} />
     </article>
