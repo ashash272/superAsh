@@ -20,7 +20,7 @@ const games: Project[] = Object.entries(descriptions).map(([file, description]) 
   const name = folder.endsWith('/Game one/') ? 'Le Germania' : folder.endsWith('/Game two/') ? 'Oscar Game' : folder.split('/').at(-2)!;
   return {
     name,
-    playUrl: folder.endsWith('/Game two/') ? 'https://lnkd.in/d-b6YYfR' : undefined,
+    playUrl: folder.endsWith('/Game two/') ? 'https://dsoatmepc.dsoatme.com/' : undefined,
     description: description.trim(),
     technologies: [],
     media: Object.entries(assets)
