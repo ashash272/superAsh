@@ -111,7 +111,7 @@ export const categories = [
   projects: portfolio[id] ?? [],
   duration: 6000,
 }));
-export const social = { instagram: '' };
+export const social = { linkedin: '', gmail: '', instagram: '' };
 export const worlds = [
   {
     name: 'A LITTLE ABOUT ASH',

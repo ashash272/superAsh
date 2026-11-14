@@ -355,7 +355,7 @@ test('portal labels highlight nearby and interaction guide stays visible', async
 test('action icon follows nearby hobbies and portals', async ({ page }) => {
   await page.setViewportSize({width:390,height:844});
   await start(page);
-  for (const [x, action] of [[100,'Star'],[345,'Tennis'],[1395,'Padel'],[2445,'Yoga'],[3495,'Archery']] as const) {
+  for (const [x, action] of [[100,'Portal'],[800,'Star'],[345,'Tennis'],[1395,'Padel'],[2445,'Yoga'],[3495,'Archery']] as const) {
     await page.evaluate((x) => { const s=(window as any).__ashify.scene.getScene('Gateway'); s.player.setPosition(x,600); s.player.setVelocity(0,0); },x);
     await expect(page.locator('.action-icon')).toHaveAttribute('data-action', action);
   }

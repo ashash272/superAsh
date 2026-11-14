@@ -36,6 +36,13 @@ export class Challenges {
   hobbies() {
     const s = this.s;
     bridge.emit('objective', 'Pick a hobby to play.');
+    const meetX = 120;
+    const meetAsh = () => bridge.emit('overlay', 'meet');
+    s.portal(meetX, 570, 'Meet Ash');
+    this.stations.push({ x: meetX, title: 'Open Meet Ash', action: meetAsh });
+    s.add.zone(meetX, 545, 150, 230).setInteractive({ useHandCursor: true }).on('pointerdown', () => {
+      if (s.started && !s.held && !this.mini) meetAsh();
+    });
     hobbies.forEach((name, i) => {
       const cx = hobbyCenter(i);
       buildHobbySpace(s, name, cx, i);
@@ -105,7 +112,7 @@ export class Challenges {
     }
     if (station) {
       if (edge) station.action();
-      return s.world === 1 ? station.title : 'E · ' + station.title;
+      return s.world === 1 || station.title === 'Open Meet Ash' ? station.title : 'E · ' + station.title;
     }
     return 'Walk right → · Click an activity to try it';
   }

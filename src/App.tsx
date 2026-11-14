@@ -17,7 +17,7 @@ import {
   type Progress,
 } from './data/progress';
 type Overlay =
-  'menu' | 'help' | 'pause' | 'reveal' | 'showcase' | 'gallery' | 'map' | 'final' | null;
+  'menu' | 'help' | 'pause' | 'reveal' | 'showcase' | 'gallery' | 'map' | 'meet' | 'final' | null;
 export default function App() {
   const host = useRef<HTMLDivElement>(null),
     game = useRef<Phaser.Game | null>(null);
@@ -75,7 +75,7 @@ export default function App() {
       'request-start': start,
       escape: () =>
         setOverlay((v) =>
-          v === null ? 'pause' : v === 'showcase' || v === 'reveal' || v === 'final' ? v : null,
+          v === 'meet' ? (state.current.started ? null : 'menu') : v === null ? 'pause' : v === 'showcase' || v === 'reveal' || v === 'final' ? v : null,
         ),
     };
     Object.entries(listeners).forEach(([k, v]) => bridge.on(k, v));
@@ -275,7 +275,10 @@ export default function App() {
               <br />
               Come meet the person behind the worlds.
             </p>
-            <button className="primary" disabled={!ready} onClick={start}>
+            <button className="primary" disabled={!ready} onClick={() => setOverlay('meet')}>
+              MEET ASH <span>↗</span>
+            </button>
+            <button className="text-button" disabled={!ready} onClick={start}>
               {ready
                 ? progress.tasks.length || progress.skills.length
                   ? 'CONTINUE ADVENTURE'
@@ -286,7 +289,7 @@ export default function App() {
             <button className="text-button" onClick={() => setOverlay('help')}>
               HOW TO PLAY <span>↗</span>
             </button>
-            <div className="press-start">PRESS ENTER TO KNOW ASH</div>
+            <div className="press-start">PRESS ENTER TO START</div>
             <div className="chapter-label">
               <span>{String(world + 1).padStart(2, '0')}</span> {worlds[world].name} <i>───── ✦</i>
             </div>
@@ -295,7 +298,7 @@ export default function App() {
         {overlay && overlay !== 'menu' && (
           <div className="scrim">
             <section
-              className={`panel ${overlay === 'showcase' ? 'showcase show-' + showId : ''} ${overlay === 'final' ? 'final-panel' : ''} ${overlay === 'pause' ? 'pause-panel' : ''}`}
+              className={`panel ${overlay === 'showcase' ? 'showcase show-' + showId : ''} ${(overlay === 'final' || overlay === 'meet') ? 'final-panel' : ''} ${overlay === 'pause' ? 'pause-panel' : ''}`}
               style={
                 overlay === 'showcase'
                   ? ({ '--skill-color': category.color } as React.CSSProperties)
@@ -497,7 +500,7 @@ export default function App() {
                   </button>
                 </>
               )}
-              {overlay === 'final' && (
+              {(overlay === 'final' || overlay === 'meet') && (
                 <>
                   <TalkingAsh />
                   <p className="gold">I TURN IDEAS INTO PLAYABLE WORLDS.</p>
@@ -505,23 +508,25 @@ export default function App() {
                     <button
                       className="primary"
                       onClick={() => {
+                        if (overlay === 'meet') {
+                          if (started) close(); else start();
+                          return;
+                        }
                         saveProgress(emptyProgress());
                         window.location.reload();
                       }}
                     >
-                      REPLAY ADVENTURE
+                      {overlay === 'final' ? 'REPLAY ADVENTURE' : started ? 'BACK TO EXPLORING' : 'START ADVENTURE'}
                     </button>
                     <button onClick={() => setOverlay('gallery')}>EXPLORE MY PROJECTS</button>
-                    {social.instagram ? (
-                      <a
-                        className="social-link"
-                        href={social.instagram}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        FOLLOW ON INSTAGRAM ↗
-                      </a>
-                    ) : null}
+                    {[
+                      ['LinkedIn', social.linkedin],
+                      ['Gmail', social.gmail && 'mailto:' + social.gmail],
+                      ['Instagram', social.instagram],
+                    ].filter(([, href]) => href).map(([label, href]) => (
+                      <a key={label} className="social-link" href={href}
+                        target={label === 'Gmail' ? undefined : '_blank'} rel="noopener noreferrer">{label} ↗</a>
+                    ))}
                     <button onClick={share}>SHARE THE GAME ↗</button>
                   </div>
                 </>

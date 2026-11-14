@@ -555,7 +555,7 @@ export class Gateway extends Phaser.Scene {
     let hint = this.logic.update(delta, edge, interact, dir);
     const nearby = this.logic.stations.find((st) => Math.abs(st.x - this.player.x) < 110);
     const action = this.player.x > worlds[this.world].width - 260
-      ? 'Portal' : nearby ? this.world === 1 ? 'Portal' : nearby.title.replace('Play ', '') : 'Star';
+      ? 'Portal' : nearby ? this.world === 1 || nearby.title === 'Open Meet Ash' ? 'Portal' : nearby.title.replace('Play ', '') : 'Star';
     if (this.registry.get('action-context') !== action) {
       this.registry.set('action-context', action);
       bridge.emit('action-context', action);
@@ -574,7 +574,7 @@ export class Gateway extends Phaser.Scene {
         !!hint &&
           (this.world === 1
             ? this.logic.stations.some((st) => Math.abs(st.x - this.player.x) < 110) || this.player.x > worlds[this.world].width - 260
-            : !this.logic.stations.some((st) => Math.abs(st.x - this.player.x) < 110) && viewWidth(this) > 650),
+            : nearby?.title === 'Open Meet Ash' || (!nearby && viewWidth(this) > 650)),
       );
     if (this.drawing) {
       this.player.anims.stop();
