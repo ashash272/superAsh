@@ -1,0 +1,3 @@
+An interactive experience for Innovo Group
+
+Using Leap motion, It’s an interactive experience where users can collect letters through hand gestures! 

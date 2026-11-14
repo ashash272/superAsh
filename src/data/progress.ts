@@ -63,13 +63,36 @@ const portfolio: Record<string, Project[]> = {
   ],
   ar: [project('Augmented Reality', 'AR Slingshot')],
 };
-const knownGameFolders = new Set(['Game one', 'Game two', 'Game three', 'Game four', 'Gmae five']);
-for (const path of Object.keys(descriptions)) {
-  const folder = path.match(/\/2DGames\/([^/]+)\//)?.[1];
-  if (folder && !knownGameFolders.has(folder)) {
-    portfolio['2d'].push(project('2DGames/' + folder, folder));
-    knownGameFolders.add(folder);
-  }
+const categoryFolders: Record<string, string> = {
+  '2DGames': '2d',
+  '3DGames': '3d',
+  'Virtual Reality': 'vr',
+  'Interactive Solutions': 'interactive',
+  'Kinect-sensor': 'motion',
+};
+const titles: Record<string, string> = {
+  'Collect food': 'Collect Food',
+  'Cross word': 'Crossword',
+  'Karat Memory game': 'Karat Memory Game',
+  telofill: 'Telofill',
+  falcon: 'Falcon',
+  'Inertactive Floor': 'Interactive Floor',
+  'Ice skating Kinect': 'Ice Skating Kinect',
+  'Leap motion': 'Leap Motion',
+  'Vr goal keeper': 'VR Goalkeeper',
+};
+const existingFolders = new Set([
+  '2DGames/Game one', '2DGames/Game two', '2DGames/Game three', '2DGames/Game four',
+  '2DGames/Gmae five', 'Virtual Reality/ChemistryLabSimulation',
+  'Virtual Reality/fire extinguisherSimulation',
+]);
+for (const path of Object.keys(assets)) {
+  const [categoryFolder, folder] = path.slice('../../projects/'.length).split('/');
+  const category = categoryFolders[categoryFolder];
+  const key = categoryFolder + '/' + folder;
+  if (!category || existingFolders.has(key)) continue;
+  (portfolio[category] ??= []).push(project(key, titles[folder] ?? folder));
+  existingFolders.add(key);
 }
 export const categories = [
   ['2d', '2D Games', '◇', '#92e5d0'],

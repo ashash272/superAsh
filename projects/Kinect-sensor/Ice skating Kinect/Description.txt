@@ -1,0 +1,3 @@
+Imagine skating on ice without leaving your living room⛷️❄️
+A 3D ice-skating game for e& using Kinect. The game let two players control their characters simultaneously, with Kinect seamlessly capturing their real-world movements in real time.
+This project highlights the power of motion-sensing technology combined with immersive game design, creating a unique two-player experience.
