@@ -74,6 +74,7 @@ const titles: Record<string, string> = {
   'Collect food': 'Collect Food',
   'Cross word': 'Crossword',
   'Karat Memory game': 'Karat Memory Game',
+  Memorygame: 'Vitamin C Memory Game',
   telofill: 'Telofill',
   falcon: 'Falcon',
   'Inertactive Floor': 'Interactive Floor',
