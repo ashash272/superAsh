@@ -1,0 +1,3 @@
+AR Slingshot Game in christams (Augmented Reality Slingshot)
+
+The player uses a virtual slingshot to shoot objects in the real-world environment through the phone camera.

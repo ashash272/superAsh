@@ -1,38 +1,76 @@
 export type Project = {
   playUrl?: string;
+  experiments?: { name: string; media: Project['media'] }[];
   name: string;
   description: string;
   technologies: string[];
   media: { type: 'image' | 'video'; src: string; alt: string }[];
 };
-const descriptions = import.meta.glob<string>('../../projects/2DGames/*/description.txt', {
+const descriptions = import.meta.glob<string>('../../projects/**/{description,Description}.txt', {
   eager: true,
   query: '?raw',
   import: 'default',
 });
-const assets = import.meta.glob<string>('../../projects/2DGames/*/*.{jpeg,jpg,png,webp,mp4,webm}', {
+const assets = import.meta.glob<string>('../../projects/**/*.{jpeg,jpg,png,webp,mp4,webm}', {
   eager: true,
   query: '?url',
   import: 'default',
 });
-const games: Project[] = Object.entries(descriptions).map(([file, description]) => {
-  const folder = file.slice(0, file.lastIndexOf('/') + 1);
-  const name = folder.endsWith('/Game one/') ? 'Le Germania' : folder.endsWith('/Game two/') ? 'Oscar Game' : folder.split('/').at(-2)!;
+
+function project(folder: string, name: string): Project {
+  const root = '../../projects/' + folder + '/';
+  const media: Project['media'] = [];
+  const groups = new Map<string, Project['media']>();
+  for (const [path, src] of Object.entries(assets).sort(([a], [b]) =>
+    a.localeCompare(b, 'en', { numeric: true }),
+  )) {
+    if (!path.startsWith(root)) continue;
+    const [first, child] = path.slice(root.length).split('/');
+    if (child && !groups.has(first)) groups.set(first, []);
+    const list = child ? groups.get(first)! : media;
+    list.push({
+      src,
+      type: /\.(mp4|webm)$/i.test(path) ? 'video' : 'image',
+      alt: [name, child && first, child || first].filter(Boolean).join(' · '),
+    });
+  }
   return {
     name,
-    playUrl: folder.endsWith('/Game two/') ? 'https://dsoatmepc.dsoatme.com/' : undefined,
-    description: description.trim(),
+    media,
     technologies: [],
-    media: Object.entries(assets)
-      .filter(([path]) => path.startsWith(folder))
-      .sort(([a], [b]) => a.localeCompare(b, 'en', { numeric: true }))
-      .map(([path, src], i) => ({
-        type: /\.(mp4|webm)$/i.test(path) ? 'video' : 'image',
-        src,
-        alt: name + ' · ' + (i + 1),
-      })),
+    description: (
+      descriptions[root + 'description.txt'] ||
+      descriptions[root + 'Description.txt'] ||
+      ''
+    ).trim(),
+    experiments: Array.from(groups, ([group, media]) => ({
+      name: group[0].toUpperCase() + group.slice(1),
+      media,
+    })),
   };
-});
+}
+const portfolio: Record<string, Project[]> = {
+  '2d': [
+    project('2DGames/Game one', 'Le Germania'),
+    { ...project('2DGames/Game two', 'Oscar Game'), playUrl: 'https://dsoatmepc.dsoatme.com/' },
+    project('2DGames/Game three', 'Collect Game'),
+    project('2DGames/Game four', 'Meza Memory Game'),
+    project('2DGames/Gmae five', 'Haier XO'),
+  ],
+  vr: [
+    project('Virtual Reality/ChemistryLabSimulation', 'Chemistry Lab Simulation'),
+    project('Virtual Reality/fire extinguisherSimulation', 'Fire Extinguisher Simulation'),
+  ],
+  ar: [project('Augmented Reality', 'AR Slingshot')],
+};
+const knownGameFolders = new Set(['Game one', 'Game two', 'Game three', 'Game four', 'Gmae five']);
+for (const path of Object.keys(descriptions)) {
+  const folder = path.match(/\/2DGames\/([^/]+)\//)?.[1];
+  if (folder && !knownGameFolders.has(folder)) {
+    portfolio['2d'].push(project('2DGames/' + folder, folder));
+    knownGameFolders.add(folder);
+  }
+}
 export const categories = [
   ['2d', '2D Games', '◇', '#92e5d0'],
   ['3d', '3D Games', '▧', '#c3a1ff'],
@@ -46,7 +84,7 @@ export const categories = [
   title,
   icon,
   color,
-  projects: id === '2d' ? games : [],
+  projects: portfolio[id] ?? [],
   duration: 6000,
 }));
 export const social = { instagram: '' };
