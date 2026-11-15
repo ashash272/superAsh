@@ -506,10 +506,10 @@ export default function App() {
                   <p className="gold">I TURN IDEAS INTO PLAYABLE WORLDS.</p>
                   {overlay === 'meet' ? (
                     <div className="meet-paths">
-                      <button className="primary" onClick={() => {
+                      <button onClick={() => {
                         start();
                         bridge.emit('travel', 1);
-                      }}>Open Portfolio Map ↗</button>
+                      }}>Open Portfolio Map</button>
                       <button onClick={() => {
                         start();
                         if (world !== 0) bridge.emit('travel', 0);
@@ -521,6 +521,10 @@ export default function App() {
                         saveProgress(emptyProgress());
                         window.location.reload();
                       }}>REPLAY ADVENTURE</button>
+                      <button onClick={() => {
+                        setOverlay(null);
+                        bridge.emit('travel', 0);
+                      }}>Play Hobbies Again</button>
                       <button onClick={() => setOverlay('gallery')}>EXPLORE MY PROJECTS</button>
                       <button onClick={share}>SHARE THE GAME ↗</button>
                     </div>
