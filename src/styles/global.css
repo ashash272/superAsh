@@ -1956,3 +1956,7 @@ h1 {
 .gallery-project h4 { margin: 1.3rem 0 .5rem; }
 .panel:has(.game-picker) { container-type: size; height: 100%; }
 .gallery-project .project-media :is(img,video) { max-height: min(70dvh, 82cqh); }
+.meet-paths, .meet-contacts { display: flex; flex-wrap: wrap; justify-content: center; gap: .65rem; }
+.meet-paths > button { flex: 1 1 10rem; min-height: 44px; margin: 0; }
+.meet-contacts { margin-top: .6rem; }
+.meet-contacts a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: .5rem; color: #e2d3f6; }

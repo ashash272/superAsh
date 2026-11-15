@@ -111,7 +111,11 @@ export const categories = [
   projects: portfolio[id] ?? [],
   duration: 6000,
 }));
-export const social = { linkedin: '', gmail: '', instagram: '' };
+export const social = {
+  linkedin: 'https://www.linkedin.com/in/ashrakat-hamed-9217a6211/',
+  instagram: 'https://www.instagram.com/ashify.gg?vrfl=ZGlhbWk3cWN1bDY0&utm_source=qr',
+  gmail: 'ashrakathamed150@gmail.com',
+};
 export const worlds = [
   {
     name: 'A LITTLE ABOUT ASH',

@@ -3,7 +3,7 @@ import { viewWidth } from '../display';
 import type { Gateway } from '../Gateway';
 
 export const hobbies = ['Tennis', 'Padel', 'Yoga', 'Archery'];
-export const hobbyCenter = (i: number) => 620 + i * 1050;
+export const hobbyCenter = (i: number) => i === 0 ? 780 : 620 + i * 1050;
 
 /** Permanent, traversable spaces; equipment remains visible between rounds. */
 export function buildHobbySpace(s: Gateway, name: string, cx: number, index: number) {

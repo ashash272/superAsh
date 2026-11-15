@@ -504,31 +504,32 @@ export default function App() {
                 <>
                   <TalkingAsh />
                   <p className="gold">I TURN IDEAS INTO PLAYABLE WORLDS.</p>
-                  <div className="menu-grid">
-                    <button
-                      className="primary"
-                      onClick={() => {
-                        if (overlay === 'meet') {
-                          if (started) close(); else start();
-                          return;
-                        }
+                  {overlay === 'meet' ? (
+                    <div className="meet-paths">
+                      <button className="primary" onClick={() => {
+                        start();
+                        bridge.emit('travel', 1);
+                      }}>Open Portfolio Map ↗</button>
+                      <button onClick={() => {
+                        start();
+                        if (world !== 0) bridge.emit('travel', 0);
+                      }}>Play Hobbies</button>
+                    </div>
+                  ) : (
+                    <div className="menu-grid">
+                      <button className="primary" onClick={() => {
                         saveProgress(emptyProgress());
                         window.location.reload();
-                      }}
-                    >
-                      {overlay === 'final' ? 'REPLAY ADVENTURE' : started ? 'BACK TO EXPLORING' : 'START ADVENTURE'}
-                    </button>
-                    <button onClick={() => setOverlay('gallery')}>EXPLORE MY PROJECTS</button>
-                    {[
-                      ['LinkedIn', social.linkedin],
-                      ['Gmail', social.gmail && 'mailto:' + social.gmail],
-                      ['Instagram', social.instagram],
-                    ].filter(([, href]) => href).map(([label, href]) => (
-                      <a key={label} className="social-link" href={href}
-                        target={label === 'Gmail' ? undefined : '_blank'} rel="noopener noreferrer">{label} ↗</a>
-                    ))}
-                    <button onClick={share}>SHARE THE GAME ↗</button>
-                  </div>
+                      }}>REPLAY ADVENTURE</button>
+                      <button onClick={() => setOverlay('gallery')}>EXPLORE MY PROJECTS</button>
+                      <button onClick={share}>SHARE THE GAME ↗</button>
+                    </div>
+                  )}
+                  <nav className="meet-contacts" aria-label="Contact Ash">
+                    <a href={social.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+                    <a href={social.instagram} target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+                    <a href={'mailto:' + social.gmail}>Gmail</a>
+                  </nav>
                 </>
               )}
             </section>

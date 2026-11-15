@@ -36,7 +36,8 @@ export class Challenges {
   hobbies() {
     const s = this.s;
     bridge.emit('objective', 'Pick a hobby to play.');
-    const meetX = 120;
+    const meetX = 155;
+    s.add.rectangle(meetX, 653, 205, 12, 0x312740).setStrokeStyle(1, 0xbca2d4).setDepth(2);
     const meetAsh = () => bridge.emit('overlay', 'meet');
     s.portal(meetX, 570, 'Meet Ash');
     this.stations.push({ x: meetX, title: 'Open Meet Ash', action: meetAsh });
